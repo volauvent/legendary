@@ -1,5 +1,7 @@
 # Trained image classification models for Keras
 
+Fork from https://github.com/fchollet/deep-learning-models.git
+
 This repository contains code for the following Keras models:
 
 - VGG16
