@@ -1,24 +1,33 @@
 # -*- coding: utf-8 -*-
+
+
 import numpy as np
 import os
 import sys
+
+sys.path.append("../../third-party/deep-learning-models")
+
+
 import random
 from PIL import Image
 from PIL import ImageEnhance
 import PIL.ImageOps
 import tensorflow as tf
 from six.moves import cPickle as pickle
-
+from resnet50 import ResNet50
+from keras.preprocessing import image
+from imagenet_utils import preprocess_input, decode_predictions
 
 DATA_PATH = 'emotion_images/'
-VALIDATION_PERCENT = .2
+VALIDATION_PERCENT = 0.0
 TEST_PERCENT = .2
-IMAGE_SIZE = 50 #resize & compress size
-MAX_SIZE = 50000 #maximum image array length
+IMAGE_SIZE = 224 #resize & compress size
+MAX_SIZE = 160000 #maximum image array length
 NUM_CHANNELS = 3  # RGB channels
 PIXEL_DEPTH = 255.0
 NUM_EMOTIONS = 8
 PARTITION_TEST = False
+
 
 
 def augment_training_set():
@@ -28,13 +37,28 @@ def augment_training_set():
         train_X = save['train_data']
         train_Y = save['train_labels']
 
+    print(train_X.shape)
+
     train_RGB = (train_X * PIXEL_DEPTH) + PIXEL_DEPTH / 2.0
     new_train, new_labels = data_augmentation(train_RGB, train_Y)
+
+    new_train_for_model = resNet_preprocess(new_train)
+
     new_train = scale_pixel_values(new_train)
+
 
     save['train_data'] = new_train
     save['train_labels'] = new_labels
-    save_pickle_file('augmented_image_data.pickle', save)
+    #print(save['train_data'].shape)
+    save_pickle_file('std_augmented_image_data.pickle', save)
+
+    save['train_data'] = new_train_for_model
+    save['train_labels'] = new_labels
+    #print("2", save['train_data'].shape)
+    save_pickle_file('model_augmented_image_data.pickle', save)
+
+
+
 
 
 def data_augmentation(dataset, labels):
@@ -85,8 +109,8 @@ def make_invariance_sets():
     print ("\nMaking invariance datasets...")
     with open(DATA_PATH + 'std_emotion_image_data.pickle', 'rb') as f:
         save = pickle.load(f)
-        val_X = save['val_data']
-        val_Y = save['val_labels']
+        val_X = save['train_data']
+        val_Y = save['train_labels']
         del save  # hint to help gc free up memory
 
     n = len(val_X)
@@ -116,6 +140,29 @@ def make_invariance_sets():
         low_contrast_val_X[i, :, :, :] = bright_mod.enhance(0.75)
         high_contrast_val_X[i, :, :, :] = bright_mod.enhance(1.5)
 
+    print("\tUsing ResNet preprocessing...")
+
+    model_date = np.zeros((n * 3, 1000))
+    model_date_label = np.zeros((n * 3, 8))
+
+    emotion_data_for_model = resNet_preprocess(translated_val_X)
+    model_date[0:n, :] = emotion_data_for_model
+    emotion_data_for_model = resNet_preprocess(flipped_val_X)
+    model_date[n:2*n, :] = emotion_data_for_model
+    emotion_data_for_model = resNet_preprocess(inverted_val_X)
+    model_date[2*n:3*n, :] = emotion_data_for_model
+    #emotion_data_for_model = resNet_preprocess(dark_val_X)
+    #model_date[3*n:4*n, :] = emotion_data_for_model
+    #emotion_data_for_model = resNet_preprocess(bright_val_X)
+    #model_date[4*n:5*n, :] = emotion_data_for_model
+    #emotion_data_for_model = resNet_preprocess(high_contrast_val_X)
+    #model_date[5*n:6*n, :] = emotion_data_for_model
+    #emotion_data_for_model = resNet_preprocess(low_contrast_val_X)
+    #model_date[6*n:7*n, :] = emotion_data_for_model
+
+    for i in range(n * 3):
+        model_date_label[i] = val_Y[i%n]
+
     print ("\tScaling pixel values...")
     translated_val_X = scale_pixel_values(translated_val_X)
     flipped_val_X = scale_pixel_values(flipped_val_X)
@@ -134,9 +181,15 @@ def make_invariance_sets():
         'dark_val_data': dark_val_X,
         'high_contrast_val_data': high_contrast_val_X,
         'low_contrast_val_data': low_contrast_val_X,
+        'train_lables': val_Y
     }
     save_pickle_file('invariance_image_data.pickle', save)
 
+    save = {
+        'train_data': model_date,
+        'train_labels': model_date_label
+    }
+    save_pickle_file('model_invariance_image_data.pickle', save)
 
 def translate_img(img):
     # translate down
@@ -180,9 +233,30 @@ def randomize(dataset, labels):
     shuffled_labels = labels[permutation, :]
     return shuffled_dataset, shuffled_labels
 
+def resNet_preprocess(imagedata):
+    # use ResNet50 preprocess image
+
+    image_nums = imagedata.shape[0]
+    #print(image_nums)
+    dataset_model = np.zeros((image_nums, 1000))
+
+    model = ResNet50(weights='imagenet')
+
+    for i in range(image_nums):
+
+        temp = np.expand_dims(imagedata[i], axis=0)
+        imagedata_pro = preprocess_input(temp)
+
+        imagedata_model = model.predict(imagedata_pro)
+        dataset_model[i, :] = imagedata_model
+
+    return dataset_model
+
+
+
 if __name__ == '__main__':
     print ("Making artist dataset and saving it to:", DATA_PATH)
     print ("To change this and other settings, edit the flags at the top of this file.")
 
-    #make_invariance_sets()
+    make_invariance_sets()
     augment_training_set()
