@@ -46,7 +46,7 @@ def plot_confusion_matrix(cm, classes,
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
 
-
+retrain = False
 training_samples = 20000
 X, y = pickle.load(open("data.pkl", 'rb'))
 
@@ -60,7 +60,7 @@ train_y = y[:training_samples]
 val_X = X[training_samples:, :]
 val_y = y[training_samples:]
 
-if not os.path.exists("model.h5"):
+if retrain or not os.path.exists("model.h5"):
     model = Sequential()
     model.add(Dense(output_dim=128, input_dim=1000))
     model.add(Dropout(0.2))
