@@ -1,5 +1,6 @@
-from keras.layers import Dense, Activation
+from keras.layers import Dense, Activation, Dropout
 from keras.models import Sequential
+from keras.optimizers import SGD
 from keras.utils.np_utils import to_categorical
 import cPickle
 import numpy as np
@@ -19,12 +20,15 @@ val_y = y[training_samples:]
 
 model = Sequential()
 model.add(Dense(output_dim=128, input_dim=1000))
+model.add(Dropout(0.2))
 model.add(Activation("tanh"))
-model.add(Dense(output_dim=64, input_dim=1000))
+model.add(Dense(output_dim=64, input_dim=128))
+model.add(Dropout(0.5))
 model.add(Activation("tanh"))
 model.add(Dense(output_dim=8))
 model.add(Activation("softmax"))
-model.compile(optimizer='adadelta',
+sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
+model.compile(optimizer=sgd,
               loss='categorical_crossentropy',
               metrics=['accuracy'])
 # print X.shape, to_categorical(y, nb_classes=8).shape
