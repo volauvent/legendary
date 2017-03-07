@@ -14,7 +14,7 @@ class databaseAPI:
 
     image_table_columns=[("id","TEXT PRIMATY KEY"), ("path","TEXT"),("label","TEXT"),("confidence","INTEGER"),("source","TEXT"),("comment","TEXT")]
     model_table_columns=[("name","TEXT"),("path","TEXT"),("accuracy","REAL")]
-    score_table_columns=[("id","INTEGER PRIMATY KEY"),("model","TEXT"),("image_id","INTEGER"),("label","TEXT"),("confidence","REAL")]
+    score_table_columns=[("id","INTEGER PRIMATY KEY"),("model","TEXT"),("image_id","TEXT"),("label","TEXT"),("confidence","REAL")]
     def __init__(self,dbPath=None,filePath=None):
         '''
         Initialization, either use SQL or NoSQL
@@ -157,7 +157,7 @@ class databaseAPI:
         	tempFile.remove()
         	print("exception happend in SQL, command cancelled")        	
         	raise
-        	
+
     def removeModel(self,name):
         path=self.query_meta("SELECT path FROM models WHERE name="+name)[0][0]
         if path==None or path=='':
@@ -173,7 +173,7 @@ class databaseAPI:
         	raise
 
     def insertModelLabel(self,model,image_id,label,confidence):
-        self.execute("INSERT INTO modelLabels VALUES(NULL,'%s',%d,'%s',%d)"
+        self.execute("INSERT INTO modelLabels VALUES(NULL,'%s',%s,'%s',%d)"
                     % (model,image_id,label,confidence))
 
     def connect(self):
