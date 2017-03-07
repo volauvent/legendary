@@ -12,7 +12,7 @@ import imagehash
 class databaseAPI:
 
 
-    image_table_columns=[("id","INTEGER PRIMATY KEY"), ("path","TEXT"),("label","TEXT"),("confidence","INTEGER"),("source","TEXT"),("comment","TEXT")]
+    image_table_columns=[("id","TEXT PRIMATY KEY"), ("path","TEXT"),("label","TEXT"),("confidence","INTEGER"),("source","TEXT"),("comment","TEXT")]
     model_table_columns=[("name","TEXT"),("path","TEXT"),("accuracy","REAL")]
     score_table_columns=[("id","INTEGER PRIMATY KEY"),("model","TEXT"),("image_id","INTEGER"),("label","TEXT"),("confidence","REAL")]
     def __init__(self,dbPath=None,filePath=None):
@@ -59,10 +59,12 @@ class databaseAPI:
         
     def query_meta(self,command):
         return self.con.execute(command).fetchall()
-    
-    def checkFolder(self,path):
-        if not os.path.isdir(self.filePath+"/"+path):
-            os.makedirs(self.filePath+"/"+path)
+
+    @staticmethod
+    def checkFolder(path):
+        if not os.path.isdir(path):
+            os.makedirs(path)
+
     def printSchemas(self):
         for (tableName,) in self.con.execute(
             """
@@ -82,40 +84,94 @@ class databaseAPI:
                     default=" [{}]".format(columnDefault) if columnDefault else "",
                     pk=" *{}".format(columnPK) if columnPK else "",
                 ))
-                
+    @staticmethod  
+    def hashImage(path):
+    	"""
+    	using average hash
+
+    	"""
+    	return str(imagehash.average_hash(Image.open(path)))
+
+    class tempFileHandler:
+    	def __init__(folderPath,file):
+    		if os.path.isfile(file):
+	    		self.originalPath = file
+	    		self.tempPath = folderPath+"/temp/"+file.split("/")[-1]
+	    		checkFolder(folderPath+"/temp")
+	    		copyfile(self.originalPath, self.tempPath)
+    			os.remove(self.originalPath)
+    		else:
+    			self.tempPath=None
+    	def remove():
+    		if self.tempPath!=None:
+    			os.remove(self.tempPath)
+    	def copyBack():
+    		if self.tempPath!=None:
+    			copyfile(self.tempPath,self.originalPath)
+
+
     def insertImage(self,path,source="other",label="NULL",confidence=5,comment="NULL"):
-        hashid = int(str(imagehash.average_hash(Image.open(path))),16)
-        self.checkFolder("images/"+source)
-        new_path=self.filePath+"/images/"+source+"/"+str(hashid)+"."+path.split('.')[-1]
+        hashid = str(imagehash.average_hash(Image.open(path)))
+        self.checkFolder(self.filePath+"/images/"+source)
+        new_path=self.filePath+"/images/"+source+"/"+hashid+"."+path.split('.')[-1]
+        tempFile = tempFileHandler(self.filePath,new_path)
         copyfile(path, new_path)
-        self.execute("INSERT INTO images VALUES(%d,'%s','%s',%d,'%s','%s')"
+
+        try:
+        	self.execute("INSERT INTO images VALUES(%s,'%s','%s',%d,'%s','%s')"
                     % (hashid,new_path,label,confidence,source,comment))
-        
+        except:
+        	os.remove(new_path)
+    		tempFile.copyBack()
+    		tempFile.remove()
+        	print("exception happend in SQL, command cancelled")
+        	raise
+
     def removeImage(self,image_id):
-        path=self.query_meta("SELECT path FROM images WHERE id="+str(image_id))[0][0]
+        path=self.query_meta("SELECT path FROM images WHERE id="+image_id)[0][0]
         if path==None or path=='':
             print("not exist")
             return
-        print(path)
+        #print(path)
         #sys.exit()
-        os.remove(path)
-        self.execute("DELETE FROM images WHERE id="+str(image_id))
-        
+
+        tempFile = tempFileHandler(self.filePath,path)
+        try:
+        	self.execute("DELETE FROM images WHERE id="+image_id)
+        except:
+        	tempFile.copyBack()
+        	tempFile.remove()
+        	print("exception happend in SQL, command cancelled")
+        	raise
+
     def insertModel(self,name,path,accuracy):
-        self.checkFolder("models")
+        checkFolder(self.filePath+"/models")
         new_path=self.filePath+"/models/"+path.split('/')[-1]
+        tempFile = tempFileHandler(self.filePath,new_path)
         copyfile(path, new_path)
-        self.execute("INSERT INTO models VALUES('%s','%s',%d)"
+        try:
+        	self.execute("INSERT INTO models VALUES('%s','%s',%d)"
                     % (name,new_path,accuracy))
-        
+        except:
+        	tempFile.copyBack()
+        	tempFile.remove()
+        	print("exception happend in SQL, command cancelled")        	
+        	raise
+        	
     def removeModel(self,name):
         path=self.query_meta("SELECT path FROM models WHERE name="+name)[0][0]
         if path==None or path=='':
             print("not exist")
             return
-        os.remove(path)
-        self.execute("DELETE FROM models WHERE name="+name)
-    
+        tempFile = tempFileHandler(self.filePath,path)
+        try:
+        	self.execute("DELETE FROM models WHERE name="+name)
+    	except:
+        	tempFile.copyBack()
+        	tempFile.remove()
+        	print("exception happend in SQL, command cancelled")
+        	raise
+
     def insertModelLabel(self,model,image_id,label,confidence):
         self.execute("INSERT INTO modelLabels VALUES(NULL,'%s',%d,'%s',%d)"
                     % (model,image_id,label,confidence))
