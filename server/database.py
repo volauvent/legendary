@@ -8,9 +8,35 @@ from shutil import copyfile
 from PIL import Image
 import imagehash
 
+import unittest
+
+
+
+
+class utility:
+    @staticmethod
+    def checkFolder(path):
+        if not os.path.isdir(path):
+            os.makedirs(path)
+
+class tempFileHandler:
+    def __init__(self,folderPath,file):
+        if os.path.isfile(file):
+            self.originalPath = file
+            self.tempPath = folderPath+"/temp/"+file.split("/")[-1]
+            utility.checkFolder(folderPath+"/temp")
+            copyfile(self.originalPath, self.tempPath)
+            os.remove(self.originalPath)
+        else:
+            self.tempPath=None
+    def remove(self):
+        if self.tempPath!=None:
+            os.remove(self.tempPath)
+    def copyBack(self):
+        if self.tempPath!=None:
+            copyfile(self.tempPath,self.originalPath)
 
 class databaseAPI:
-
 
     image_table_columns=[("id","TEXT PRIMATY KEY"), ("path","TEXT"),("label","TEXT"),("confidence","INTEGER"),("source","TEXT"),("comment","TEXT")]
     model_table_columns=[("name","TEXT"),("path","TEXT"),("accuracy","REAL")]
@@ -92,22 +118,7 @@ class databaseAPI:
     	"""
     	return str(imagehash.average_hash(Image.open(path)))
 
-    class tempFileHandler:
-    	def __init__(folderPath,file):
-    		if os.path.isfile(file):
-	    		self.originalPath = file
-	    		self.tempPath = folderPath+"/temp/"+file.split("/")[-1]
-	    		checkFolder(folderPath+"/temp")
-	    		copyfile(self.originalPath, self.tempPath)
-    			os.remove(self.originalPath)
-    		else:
-    			self.tempPath=None
-    	def remove():
-    		if self.tempPath!=None:
-    			os.remove(self.tempPath)
-    	def copyBack():
-    		if self.tempPath!=None:
-    			copyfile(self.tempPath,self.originalPath)
+
 
 
     def insertImage(self,path,source="other",label="NULL",confidence=5,comment="NULL"):
@@ -118,17 +129,17 @@ class databaseAPI:
         copyfile(path, new_path)
 
         try:
-        	self.execute("INSERT INTO images VALUES(%s,'%s','%s',%d,'%s','%s')"
+        	self.execute("INSERT INTO images VALUES('%s','%s','%s',%d,'%s','%s')"
                     % (hashid,new_path,label,confidence,source,comment))
         except:
-        	os.remove(new_path)
-    		tempFile.copyBack()
-    		tempFile.remove()
-        	print("exception happend in SQL, command cancelled")
-        	raise
+            os.remove(new_path)
+            tempFile.copyBack()
+            tempFile.remove()
+            print("exception happend in SQL, command cancelled")
+            raise
 
     def removeImage(self,image_id):
-        path=self.query_meta("SELECT path FROM images WHERE id="+image_id)[0][0]
+        path=self.query_meta("SELECT path FROM images WHERE id= '%s'" % image_id)[0][0]
         if path==None or path=='':
             print("not exist")
             return
@@ -137,7 +148,7 @@ class databaseAPI:
 
         tempFile = tempFileHandler(self.filePath,path)
         try:
-        	self.execute("DELETE FROM images WHERE id="+image_id)
+        	self.execute("DELETE FROM images WHERE id='%s'"%image_id)
         except:
         	tempFile.copyBack()
         	tempFile.remove()
@@ -166,7 +177,7 @@ class databaseAPI:
         tempFile = tempFileHandler(self.filePath,path)
         try:
         	self.execute("DELETE FROM models WHERE name="+name)
-    	except:
+        except:
         	tempFile.copyBack()
         	tempFile.remove()
         	print("exception happend in SQL, command cancelled")
@@ -200,3 +211,16 @@ class databaseAPI:
         """
         return None
 
+
+        
+class TestDataBase(unittest.TestCase):
+    def test_insert_delete(self):
+        db=databaseAPI('test.db','data')
+        db.insertImage('excitement.jpg')
+        self.assertTrue(os.path.isfile('data/images/other/8080707efec1c3f7.jpg'))
+        self.assertEqual(db.query_meta('SELECT * FROM images where id = "8080707efec1c3f7"'),[('8080707efec1c3f7', 'data/images/other/8080707efec1c3f7.jpg', 'NULL', 5, 'other', 'NULL')])
+        db.removeImage('8080707efec1c3f7')
+        self.assertFalse(os.path.isfile('data/images/other/8080707efec1c3f7.jpg'))
+        self.assertEqual(db.query_meta('SELECT * FROM images where id = "8080707efec1c3f7"'),[])
+if __name__=='__main__':
+    unittest.main()
