@@ -1,0 +1,27 @@
+.col-centered{
+    float: none;
+    margin: 0 auto;
+}
+.text-center{
+	text-align: center;
+}
+.axis path,
+      .axis line {
+        fill: none;
+        stroke: black;
+        shape-rendering: crispEdges;
+      }
+.options {
+	text-align:left;
+	border-style: solid;
+}
+
+.radio{
+	padding-left: 10px;
+	margin:auto;
+}
+
+#textarea {
+	width: 600px;
+	height:200px;
+}
