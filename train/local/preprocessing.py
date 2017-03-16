@@ -62,8 +62,8 @@ def load_augment_preprocess_img():
     sample_num = cal_img_num()
     labelNames = os.listdir("images")
     # rawX = np.zeros((sample_num, 224, 224, 3))
-    X = np.zeros((sample_num * 6, 1000))
-    y = np.zeros(sample_num * 6, dtype=int)
+    X = np.zeros((sample_num * 4, 1000))
+    y = np.zeros(sample_num * 4, dtype=int)
     model = ResNet50(weights='imagenet')
 
     cnt = 0
@@ -80,14 +80,14 @@ def load_augment_preprocess_img():
             trans_x = translate_img(x)
             flip_x = flip_img(x)
             inv_x = inverse_img(x)
-            brig_x = bright_img(x)
-            cons_x = contrast_img(x)
+            # brig_x = bright_img(x)
+            # cons_x = contrast_img(x)
 
             trans_x = np.expand_dims(trans_x, axis=0)
             flip_x = np.expand_dims(flip_x, axis=0)
             inv_x = np.expand_dims(inv_x, axis=0)
-            brig_x = np.expand_dims(brig_x, axis=0)
-            cons_x = np.expand_dims(cons_x, axis=0)
+            # brig_x = np.expand_dims(brig_x, axis=0)
+            # cons_x = np.expand_dims(cons_x, axis=0)
             x = np.expand_dims(x, axis=0)
 
             x = preprocess_input(x)
@@ -96,11 +96,11 @@ def load_augment_preprocess_img():
             # inv_x = preprocess_input(inv_x)
             # brig_x = preprocess_input(brig_x)
             # cons_x = preprocess_input(cons_x)
-            trans_x = scale_pixel_values(trans_x)
-            flip_x = scale_pixel_values(flip_x)
-            inv_x = scale_pixel_values(inv_x)
-            brig_x = scale_pixel_values(brig_x)
-            cons_x = scale_pixel_values(cons_x)
+            # trans_x = scale_pixel_values(trans_x)
+            # flip_x = scale_pixel_values(flip_x)
+            # inv_x = scale_pixel_values(inv_x)
+            # brig_x = scale_pixel_values(brig_x)
+            # cons_x = scale_pixel_values(cons_x)
 
             # rawX[cnt, :] = x
             X[cnt, :] = model.predict(x)
@@ -115,12 +115,12 @@ def load_augment_preprocess_img():
             X[cnt, :] = model.predict(inv_x)
             y[cnt] = lab
             cnt += 1
-            X[cnt, :] = model.predict(brig_x)
-            y[cnt] = lab
-            cnt += 1
-            X[cnt, :] = model.predict(cons_x)
-            y[cnt] = lab
-            cnt += 1
+            # X[cnt, :] = model.predict(brig_x)
+            # y[cnt] = lab
+            # cnt += 1
+            # X[cnt, :] = model.predict(cons_x)
+            # y[cnt] = lab
+            # cnt += 1
             if cnt%100 == 0:
                 print(cnt)
                 # break
@@ -206,5 +206,5 @@ def scale_pixel_values(dataset):
 
 
 if __name__ == '__main__':
-    load_preprocess_img()
+    # load_preprocess_img()
     load_augment_preprocess_img()
