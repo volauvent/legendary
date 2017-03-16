@@ -7,7 +7,7 @@ import sys
 from shutil import copyfile
 from PIL import Image
 import imagehash
-
+import shutil
 import unittest
 
 
@@ -18,6 +18,24 @@ class utility:
     def checkFolder(path):
         if not os.path.isdir(path):
             os.makedirs(path)
+
+    @staticmethod
+    def isSelect(command):
+        if (command.split(' ')[0]).lower()!='select':
+            return False
+        return True
+
+    @staticmethod  
+    def hashImage(image):
+        """
+        using average hash
+
+        """
+        # if iamge is path, read it
+        if type(image) is str:
+            image =Image.open(image)
+        return str(imagehash.average_hash(image))
+
 
 class tempFileHandler:
     def __init__(self,folderPath,file):
@@ -36,9 +54,26 @@ class tempFileHandler:
         if self.tempPath!=None:
             copyfile(self.tempPath,self.originalPath)
 
+class fileManager:
+    def __init__(self,filePath):
+        self.filePath=filePath
+        utility.checkFolder(self.filePath+"/models")
+
+    def getImagePath(self,name,source='other'):
+        utility.checkFolder(self.filePath+"/images/"+source)
+        return "%s/images/%s/%s" % (self.filePath,source,name)
+
+    def getModelPath(self,name):
+        return "%s/models/%s" % (self.filePath,name)
+
+    def getAllFileList(self):
+
+        return set()
+
+
 class databaseAPI:
 
-    image_table_columns=[("id","TEXT PRIMATY KEY"), ("path","TEXT"),("label","TEXT"),("confidence","INTEGER"),("source","TEXT"),("comment","TEXT")]
+    image_table_columns=[("id","TEXT PRIMATY KEY UNIQUE"), ("path","TEXT"),("label","TEXT"),("confidence","INTEGER"),("source","TEXT"),("comment","TEXT")]
     model_table_columns=[("name","TEXT"),("path","TEXT"),("accuracy","REAL")]
     score_table_columns=[("id","INTEGER PRIMATY KEY"),("model","TEXT"),("image_id","TEXT"),("label","TEXT"),("confidence","REAL")]
     def __init__(self,dbPath=None,filePath=None):
@@ -50,46 +85,39 @@ class databaseAPI:
         '''
 
         if not os.path.isfile(dbPath):
-            print (dbPath+" doesn't exist, do you wish to create a new one?[Y/N] \n")
-            feedback = input()
-            if str(feedback).lower() not in ["y","yes"]:
-                print("exiting")
-                sys.exit()
-            else:
-                self.con = lite.connect(dbPath)
-                create_image_table = "CREATE TABLE images (" +','.join([i+" "+j for i,j in databaseAPI.image_table_columns])+");"
-                self.execute(create_image_table)
-                create_model_table = "CREATE TABLE models (" +','.join([i+" "+j for i,j in databaseAPI.model_table_columns])+");"
-                self.execute(create_model_table)
-                create_score_table = "CREATE TABLE modelLabels (" +','.join([i+" "+j for i,j in databaseAPI.score_table_columns])+");"
-                self.execute(create_score_table)
+            print (dbPath+" doesn't exist, will create a new one \n")
+            self.con = lite.connect(dbPath)
+            # create the three tables
+            create_image_table = "CREATE TABLE images (" +','.join([i+" "+j for i,j in databaseAPI.image_table_columns])+");"
+            self.execute(create_image_table)
+            create_model_table = "CREATE TABLE models (" +','.join([i+" "+j for i,j in databaseAPI.model_table_columns])+");"
+            self.execute(create_model_table)
+            create_score_table = "CREATE TABLE modelLabels (" +','.join([i+" "+j for i,j in databaseAPI.score_table_columns])+");"
+            self.execute(create_score_table)
         else:
             self.con = lite.connect(dbPath)
             
         if not os.path.isdir(filePath):
-            print (filePath+" doesn't exist, do you wish to create a new one?[Y/N] \n")
-            feedback = input()
-            if str(feedback).lower() not in ["y","yes"]:
-                print("exiting")
-                sys.exit()
-            else:
-                os.makedirs(filePath)
+            print (filePath+" doesn't exist, will create a new one \n")
+            os.makedirs(filePath)
         self.dbPath=dbPath
         self.filePath=filePath
+        self.fileManage=fileManager(filePath)
         
     def close(self):
         self.con.close()
-        
+
     def execute(self,command):
         self.con.executescript(command)
         
     def query_meta(self,command):
+        #only excute SELECT commands
+        if not utility.isSelect(command):
+            raise ValueError('query can only excute SELECT commands')
+            return
         return self.con.execute(command).fetchall()
 
-    @staticmethod
-    def checkFolder(path):
-        if not os.path.isdir(path):
-            os.makedirs(path)
+
 
     def printSchemas(self):
         for (tableName,) in self.con.execute(
@@ -110,22 +138,15 @@ class databaseAPI:
                     default=" [{}]".format(columnDefault) if columnDefault else "",
                     pk=" *{}".format(columnPK) if columnPK else "",
                 ))
-    @staticmethod  
-    def hashImage(path):
-    	"""
-    	using average hash
-
-    	"""
-    	return str(imagehash.average_hash(Image.open(path)))
-
-
 
 
     def insertImage(self,path,source="other",label="NULL",confidence=5,comment="NULL"):
-        hashid = str(imagehash.average_hash(Image.open(path)))
-        self.checkFolder(self.filePath+"/images/"+source)
-        new_path=self.filePath+"/images/"+source+"/"+hashid+"."+path.split('.')[-1]
+        hashid = str(utility.hashImage(path))
+        
+        new_path=self.fileManage.getImagePath(hashid+"."+path.split('.')[-1],source)
+        # put possible duplicate file to temp handler
         tempFile = tempFileHandler(self.filePath,new_path)
+
         copyfile(path, new_path)
 
         try:
@@ -143,8 +164,6 @@ class databaseAPI:
         if path==None or path=='':
             print("not exist")
             return
-        #print(path)
-        #sys.exit()
 
         tempFile = tempFileHandler(self.filePath,path)
         try:
@@ -155,11 +174,14 @@ class databaseAPI:
         	print("exception happend in SQL, command cancelled")
         	raise
 
-    def insertModel(self,name,path,accuracy):
-        checkFolder(self.filePath+"/models")
-        new_path=self.filePath+"/models/"+path.split('/')[-1]
+    def insertModel(self,path,name='',accuracy=0):
+        
+        new_path=self.fileManage.getModelPath(path.split('/')[-1])
         tempFile = tempFileHandler(self.filePath,new_path)
         copyfile(path, new_path)
+
+        if name=='':
+            name = path.split('/')[-1]
         try:
         	self.execute("INSERT INTO models VALUES('%s','%s',%d)"
                     % (name,new_path,accuracy))
@@ -186,6 +208,7 @@ class databaseAPI:
     def insertModelLabel(self,model,image_id,label,confidence):
         self.execute("INSERT INTO modelLabels VALUES(NULL,'%s',%s,'%s',%d)"
                     % (model,image_id,label,confidence))
+
 
     def connect(self):
         """
@@ -215,12 +238,17 @@ class databaseAPI:
         
 class TestDataBase(unittest.TestCase):
     def test_insert_delete(self):
-        db=databaseAPI('test.db','data')
-        db.insertImage('excitement.jpg')
-        self.assertTrue(os.path.isfile('data/images/other/8080707efec1c3f7.jpg'))
-        self.assertEqual(db.query_meta('SELECT * FROM images where id = "8080707efec1c3f7"'),[('8080707efec1c3f7', 'data/images/other/8080707efec1c3f7.jpg', 'NULL', 5, 'other', 'NULL')])
-        db.removeImage('8080707efec1c3f7')
-        self.assertFalse(os.path.isfile('data/images/other/8080707efec1c3f7.jpg'))
-        self.assertEqual(db.query_meta('SELECT * FROM images where id = "8080707efec1c3f7"'),[])
+        im=Image.new("RGB", (512, 512), "red")
+        utility.checkFolder('testDatabase')
+        im.save('testDatabase/test.jpg')
+        #print(utility.hashImage(im))
+        db=databaseAPI('testDatabase/test.db','testDatabase/data')
+        db.insertImage('testDatabase/test.jpg')
+        self.assertTrue(os.path.isfile('testDatabase/data/images/other/0000000000000000.jpg'))
+        self.assertEqual(db.query_meta('SELECT * FROM images where id = "0000000000000000"'),[('0000000000000000', 'testDatabase/data/images/other/0000000000000000.jpg', 'NULL', 5, 'other', 'NULL')])
+        db.removeImage('0000000000000000')
+        self.assertFalse(os.path.isfile('testDatabase/data/images/other/0000000000000000.jpg'))
+        self.assertEqual(db.query_meta('SELECT * FROM images where id = "0000000000000000"'),[])
+        shutil.rmtree('testDatabase')
 if __name__=='__main__':
     unittest.main()
