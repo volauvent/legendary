@@ -9,7 +9,7 @@ from PIL import Image
 import imagehash
 import shutil
 import unittest
-
+import glob
 
 
 
@@ -38,6 +38,9 @@ class utility:
 
 
 class tempFileHandler:
+    """
+    this class handles temporary files
+    """
     def __init__(self,folderPath,file):
         if os.path.isfile(file):
             self.originalPath = file
@@ -55,6 +58,9 @@ class tempFileHandler:
             copyfile(self.tempPath,self.originalPath)
 
 class fileManager:
+    """
+    this class manages file system locations
+    """
     def __init__(self,filePath):
         self.filePath=filePath
         utility.checkFolder(self.filePath+"/models")
@@ -66,9 +72,23 @@ class fileManager:
     def getModelPath(self,name):
         return "%s/models/%s" % (self.filePath,name)
 
-    def getAllFileList(self):
+    def getAllImageList(self):
+        pathSet=set()
+        for root, dirs, files in os.walk(self.filePath+"/images"):
+            path = root.split(os.sep)
+            for file in files:
+                if file != ".DS_Store":
+                    pathSet.add(root+os.sep+file)
+        return pathSet
 
-        return set()
+    def getAllModelList(self):
+        pathSet=set()
+        for root, dirs, files in os.walk(self.filePath+"/models"):
+            path = root.split(os.sep)
+            for file in files:
+                if file != ".DS_Store":
+                    pathSet.add(root+os.sep+file)
+        return pathSet
 
 
 class databaseAPI:
@@ -86,7 +106,7 @@ class databaseAPI:
 
         if not os.path.isfile(dbPath):
             print (dbPath+" doesn't exist, will create a new one \n")
-            self.con = lite.connect(dbPath)
+            self.con = self.__connect(dbPath)
             # create the three tables
             create_image_table = "CREATE TABLE images (" +','.join([i+" "+j for i,j in databaseAPI.image_table_columns])+");"
             self.execute(create_image_table)
@@ -95,7 +115,7 @@ class databaseAPI:
             create_score_table = "CREATE TABLE modelLabels (" +','.join([i+" "+j for i,j in databaseAPI.score_table_columns])+");"
             self.execute(create_score_table)
         else:
-            self.con = lite.connect(dbPath)
+            self.con = self.__connect(dbPath)
             
         if not os.path.isdir(filePath):
             print (filePath+" doesn't exist, will create a new one \n")
@@ -106,6 +126,15 @@ class databaseAPI:
         
     def close(self):
         self.con.close()
+
+    def __connect(self,name):
+        try:
+            conn = lite.connect(name)
+            return conn
+        except Error as e:
+            print(e)
+     
+        return None
 
     def execute(self,command):
         self.con.executescript(command)
@@ -145,7 +174,10 @@ class databaseAPI:
         
         new_path=self.fileManage.getImagePath(hashid+"."+path.split('.')[-1],source)
         # put possible duplicate file to temp handler
-        tempFile = tempFileHandler(self.filePath,new_path)
+        if new_path!=path:
+            tempFile = tempFileHandler(self.filePath,new_path)
+        else:
+            tempFile=tempFileHandler(self.filePath,'')
 
         copyfile(path, new_path)
 
@@ -177,7 +209,13 @@ class databaseAPI:
     def insertModel(self,path,name='',accuracy=0):
         
         new_path=self.fileManage.getModelPath(path.split('/')[-1])
-        tempFile = tempFileHandler(self.filePath,new_path)
+
+        
+        if new_path!=path:
+            tempFile = tempFileHandler(self.filePath,new_path)
+        else:
+            tempFile=tempFileHandler(self.filePath,'')
+
         copyfile(path, new_path)
 
         if name=='':
@@ -209,30 +247,38 @@ class databaseAPI:
         self.execute("INSERT INTO modelLabels VALUES(NULL,'%s',%s,'%s',%d)"
                     % (model,image_id,label,confidence))
 
+    def synchronize(self):
+        """
+        check whether sqlDB and file system is consistent
+        """
+        print("checking images")
+        files=self.fileManage.getAllImageList()
+        rows=self.query_meta("SELECT path, id from images")
+        for row in rows:
+            if row[0] not in files:
+                print("%s not in file system" % row[1])
+                self.removeImage(row[1])
+            else:
+                files.discard(row[0])
+        if len(files)!=0:
+            for file in files:
+                print("%s not in database" % file)
+                self.insertImage(file,file.split('/')[-2])
+        print("checking models")
+        files=self.fileManage.getAllModelList()
+        rows=self.query_meta("SELECT path, name from models")
+        for row in rows:
+            if row[0] not in files:
+                print("%s not in file system" % row[1])
+                self.removeModel(row[1])
+            else:
+                files.discard(row[0])
+        if len(files)!=0:
+            for file in files:
+                print("%s not in database" % file)
+                self.insertModel(file)
+        print("Done")
 
-    def connect(self):
-        """
-        connect to database
-        """
-        pass
-
-    def create(self):
-        """
-        create a table
-        """
-        pass
-
-    def insert(self, data):
-        """
-        insert an entry
-        """
-        pass
-
-    def query(self, command):
-        """
-        send query to backend, and get data back
-        """
-        return None
 
 
         
