@@ -2,15 +2,56 @@
 {% block content%}
   	<div class="container">
       <div class="row">
-        <div class="col-md-6">
-          <p>
 
-          - Image Label Page
 
-          </p>
+        <div class="col-md-12">
+          <div class="col-md-9">
+            <p><b>Label Iamge...</b></p>
+          </div>
+
+
+          <div class="col-md-3">
+            <a href="/index"><button type="button" id="to-label-page" class="btn btn-success">Return Predict Page</button></a>
+          </div>
+          <br>
         </div>
-
         
+
+        <div class="col-md-12">
+          <br><br>
+          <div class="col-md-6">
+            <img id="label-img" width = "100%">
+          </div>
+
+
+          <div class="col-md-3">
+            <p>Please choose one category:</p>
+            <hr>
+            <form>
+              <input type="radio" name="emotion" value="amusement" checked> amusement
+              <br><br>
+              <input type="radio" name="emotion" value="awe"> awe
+              <br><br>
+              <input type="radio" name="emotion" value="contentment"> contentment
+              <br><br>
+              <input type="radio" name="emotion" value="excitement"> excitement
+              <br><br>
+              <input type="radio" name="emotion" value="anger"> anger
+              <br><br>
+              <input type="radio" name="emotion" value="disgust"> disgust
+              <br><br>
+              <input type="radio" name="emotion" value="fear"> fear
+              <br><br>
+              <input type="radio" name="emotion" value="sadness"> sadness
+            </form> 
+          </div>
+
+
+          <div class="col-md-3">
+            <br><br><br><br><br><br><br><br>
+            <p><button type="button" id="submit-label" class="btn btn-danger">Submit</button></p>
+          </div>
+        </div>
       </div>
 
   	</div>

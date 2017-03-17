@@ -40,12 +40,12 @@
     <script>
 
       $(document).ready(function(){
-        console.log("In!");
+        //console.log("In!");
 
 
         // Choose image button
         $("#upload-img").click(function(event){
-          console.log("Browse!");
+          // console.log("Browse!");
         });
 
 
@@ -73,7 +73,7 @@
 
           reader.onloadend = function(evt){
             //image.getElementById("#plot-img").src = this.result;
-            console.log("image upload!")
+            // console.log("image upload!")
             //$("#plot-img").innerHTML= '<img src="'+e.target.result+'" alt=""/>';
             // $("#plot-img").src=e.target.result;
             document.getElementById('plot-img').src = evt.target.result;
@@ -81,7 +81,7 @@
 
             //$("#file-name").html($("#upload-img")[0].files[0]['name']);
 
-            // var imageData = e.target.result;
+            // var imageData = evt.target.result;
             // $.ajax({
             //   url: '/imgClassify',
             //   type: 'POST',
@@ -97,6 +97,16 @@
             // });
           }
         });
+
+
+        // Submit image button
+        // $("#submit-img").click(function(event){
+        //   $.ajax({
+        //     url: '/labelling',
+        //     type: 'POST',
+        //   });
+        // });
+
 
 
       });
