@@ -18,23 +18,40 @@
           - 8 motion categories: amusement, awe, contentment, excitement, anger, disgust, fear and sadness.
           </p>
         </div>
-
+<!-- 
         <div class="col-md-12">
-          <div class="col-md-2">
+          <form action="imgClassify" method="post" enctype="multipart/form-data">
+          <label class="btn btn-primary btn-file">
+          <input type="file" name="heheda" style="display: none;">
+          </label>
+          <input type="submit" />
+          </form>
+        </div>
+ -->
+        <div class="col-md-12">
+          <div class="col-md-10">
             <br>
-            <label class="btn btn-primary btn-file">
-              Choose Image
-              <input type="file" id="upload-img" style="display: none;">
-            </label>
+            
+            <!-- <form action="index" method="post" enctype="multipart/form-data"> -->
+            <!--<form role="form" id="uploadForm" method="POST" enctype="multipart/form-data">-->
+              <label class="btn btn-primary btn-file">
+                Choose Image
+                <input type="file" name="upload-img" id="upload-img" style="display: none;">
+              </label>
+              <button type="submit" id="submit-img" class="btn btn-primary">Submit</button>
+            <!--</form>-->
+            
             <br>
             <p id="file-name"></p>
           </div>
 
 
-          <div class="col-md-8">
+<!--           <div class="col-md-8">
             <br>
-            <p><button type="button" id="submit-img" class="btn btn-primary">Submit</button></p>
-          </div>
+            <form action="imgClassify" method="post" enctype="multipart/form-data">
+              <button type="submit" id="submit-img" class="btn btn-primary">Submit</button>
+            </form>
+          </div> -->
 
 
           <div class="col-md-2">
