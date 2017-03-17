@@ -2,20 +2,58 @@
 {% block content%}
   	<div class="container">
       <div class="row">
+
+
         <div class="col-md-6">
           <p>
-
-          - Emotional Data Management and Analysis - “SEDMA”
+          - Emotional Data Management and Analysis - “SEDMA”<br>
           - SEDMA contains a whole workflow for affective level image data classification, labeling and storing.
-
           </p>
         </div>
+
+
         <div class="col-md-6">
-          <pre>
-          - Image emotional content classification.
+          <p>
+          - Image emotional content classification.<br>
           - 8 motion categories: amusement, awe, contentment, excitement, anger, disgust, fear and sadness.
-          </pre>
+          </p>
         </div>
+
+        <div class="col-md-12">
+          <div class="col-md-2">
+            <br>
+            <label class="btn btn-primary btn-file">
+              Choose Image
+              <input type="file" id="upload-img" style="display: none;">
+            </label>
+            <hr>
+            <p id="file-name"></p>
+          </div>
+
+
+          <div class="col-md-10">
+            <br>
+            <p><button type="button" id="submit-img" class="btn btn-primary">Submit</button></p>
+          </div>
+        </div>
+
+        <div class="col-md-12">
+
+          <div class="col-md-6">
+            <p>Upload image: </p>
+            <img id="plot-img" src="" width = "100%"/>
+            <!-- <input type="file" onchange="selectImage(this);"/> -->
+            <!-- <img id="plot-img"></img> -->
+          </div>
+
+
+          <div class="col-md-6">
+            <p>Predict emotion: </p>
+            <p id="predict-emotion"></p>
+          </div>
+
+        </div>
+
         
       </div>
 

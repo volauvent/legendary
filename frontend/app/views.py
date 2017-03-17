@@ -15,8 +15,14 @@ def index():
     return render_template('index.html', title='Home')
 
 
-@app.route('/labelling', methods=['POST', 'GET'])
+@app.route('/')
+@app.route('/labelling')
 def labelling():
+    return render_template('labelling.html', title='Labelling')
+
+
+@app.route('/imageLable', methods=['POST', 'GET'])
+def imageLable():
     if request.mothod == 'POST':
         # add a new label of given picture into the database
         return
@@ -26,12 +32,12 @@ def labelling():
         return
 
 
-@app.route('/classification', methods=['POST', 'GET'])
-def picClassification():
+@app.route('/imgClassify', methods=['POST', 'GET'])
+def imgClassify():
     if request.method == 'POST':
-    # take the upload picture as an input
-    # carry out emotion classification
-    # return emotion category
+        # take the upload picture as an input
+        # carry out emotion classification
+        # return emotion category
         return
     else:
         # take the choosen emotion category as an input
