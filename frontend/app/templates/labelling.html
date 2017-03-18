@@ -5,14 +5,18 @@
 
 
         <div class="col-md-12">
-          <div class="col-md-9">
-            <p><b>Label Iamge...</b></p>
+          <div class="col-md-6">
+            <p><b>Unlabeled image: </b></p>
           </div>
-
 
           <div class="col-md-3">
-            <a href="/index"><button type="button" id="to-label-page" class="btn btn-success">Return Predict Page</button></a>
+            <button type="button" id="request-new-image" class="btn btn-primary">Request new image</button>
           </div>
+
+          <div class="col-md-3">
+            <a href="/index"><button type="button" id="to-predict-page" class="btn btn-success">Return Predict Page</button></a>
+          </div>
+
           <br>
         </div>
         
@@ -20,7 +24,7 @@
         <div class="col-md-12">
           <br><br>
           <div class="col-md-6">
-            <img id="label-img" width = "100%">
+            <img id="label-img" width = "100%"/>
           </div>
 
 
@@ -28,21 +32,21 @@
             <p>Please choose one category:</p>
             <hr>
             <form>
-              <input type="radio" name="emotion" value="amusement" checked> amusement
+              <input type="radio" name="emotion" id="amusement" value="amusement"> <p style="display:inline;" id="amusement-p">amusement</p>
               <br><br>
-              <input type="radio" name="emotion" value="awe"> awe
+              <input type="radio" name="emotion" id="awe" value="awe"> <p style="display:inline;" id="awe-p">awe</p>
               <br><br>
-              <input type="radio" name="emotion" value="contentment"> contentment
+              <input type="radio" name="emotion" id="contentment" value="contentment"> <p style="display:inline;" id="contentment-p">contentment</p>
               <br><br>
-              <input type="radio" name="emotion" value="excitement"> excitement
+              <input type="radio" name="emotion" id="excitement" value="excitement"> <p style="display:inline;" id="excitement-p">excitement</p>
               <br><br>
-              <input type="radio" name="emotion" value="anger"> anger
+              <input type="radio" name="emotion" id="anger" value="anger"> <p style="display:inline;" id="anger-p">anger</p>
               <br><br>
-              <input type="radio" name="emotion" value="disgust"> disgust
+              <input type="radio" name="emotion" id="disgust" value="disgust"> <p style="display:inline;" id="disgust-p">disgust</p>
               <br><br>
-              <input type="radio" name="emotion" value="fear"> fear
+              <input type="radio" name="emotion" id="fear" value="fear"> <p style="display:inline;" id="fear-p">fear</p>
               <br><br>
-              <input type="radio" name="emotion" value="sadness"> sadness
+              <input type="radio" name="emotion" id="sadness" value="sadness"> <p style="display:inline;" id="sadness-p">sadness</p>
             </form> 
           </div>
 
