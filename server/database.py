@@ -10,7 +10,19 @@ import imagehash
 import shutil
 import unittest
 import logging
+import multiprocessing as mp
 
+'''
+                (0,'None');
+                (1,'amusement');
+                (2,'awe');
+                (3,'contentment');
+                (4,'anger');
+                (5,'disgust');
+                (6,'excitement');
+                (7,'fear');
+                (8,'sadness');
+'''
 
 class utility:
     @staticmethod
@@ -33,7 +45,8 @@ class utility:
         # if iamge is path, read it
         if type(image) is str:
             image =Image.open(image)
-        return str(imagehash.average_hash(image))
+        return str(imagehash.phash(image))
+
 
 
 class tempFileHandler:
@@ -91,7 +104,15 @@ class fileManager:
 
 
 class databaseAPI:
-
+    labels=['None',
+                'amusement',
+                'awe',
+                'contentment',
+                'anger',
+                'disgust',
+                'excitement',
+                'fear',
+                'sadness']
     image_table_columns=[("id","TEXT PRIMATY KEY UNIQUE"), ("path","TEXT"),("label","INTEGER"),("confidence","INTEGER"),("source","TEXT"),("comment","TEXT")]
     model_table_columns=[("name","TEXT"),("path","TEXT"),("accuracy","REAL")]
     score_table_columns=[("id","INTEGER PRIMARY KEY"),("model","TEXT"),("image_id","TEXT"),("label","INTEGER"),("confidence","REAL")]
@@ -141,7 +162,7 @@ class databaseAPI:
             self.execute("""
                 INSERT INTO labelType VALUES(0,'None');
                 INSERT INTO labelType VALUES(1,'amusement');
-                INSERT INTO labelType VALUES(2,'owe');
+                INSERT INTO labelType VALUES(2,'awe');
                 INSERT INTO labelType VALUES(3,'contentment');
                 INSERT INTO labelType VALUES(4,'anger');
                 INSERT INTO labelType VALUES(5,'disgust');
@@ -155,7 +176,7 @@ class databaseAPI:
         self.con.close()
 
     def __connect(self,name):
-        
+
         try:
             conn = lite.connect(name)
             return conn
@@ -167,6 +188,7 @@ class databaseAPI:
 
     def execute(self,command):
         self.con.executescript(command)
+        return True
         
     def query_meta(self,command):
         #only excute SELECT commands
@@ -176,19 +198,19 @@ class databaseAPI:
         return self.con.execute(command).fetchall()
 
 
-
     def printSchemas(self):
+        string=[]
         for (tableName,) in self.con.execute(
             """
             select NAME from SQLITE_MASTER where TYPE='table' order by NAME;
             """
         ):
-            print("{}:".format(tableName))
+            string.append("{}:\n".format(tableName))
             for (
                 columnID, columnName, columnType,
                 columnNotNull, columnDefault, columnPK,
             ) in self.con.execute("pragma table_info('{}');".format(tableName)):
-                print("  {id}: {name}({type}){null}{default}{pk}".format(
+                string.append("  {id}: {name}({type}){null}{default}{pk} \n".format(
                     id=columnID,
                     name=columnName,
                     type=columnType,
@@ -196,11 +218,13 @@ class databaseAPI:
                     default=" [{}]".format(columnDefault) if columnDefault else "",
                     pk=" *{}".format(columnPK) if columnPK else "",
                 ))
+        return "".join(string)
 
 
-    def insertImage(self,path,source='other',label=0,confidence=5,comment="NULL"):
-        hashid = str(utility.hashImage(path))
-        
+    def insertImage(self,path,source='other',label=0,confidence=5,comment="NULL",hashid=None):
+
+        if hashid==None:
+            hashid = str(utility.hashImage(path))
         new_path=self.fileManage.getImagePath(hashid+"."+path.split('.')[-1],source)
         # put possible duplicate file to temp handler
         if path!=new_path:
@@ -212,13 +236,14 @@ class databaseAPI:
 
         try:
         	self.execute("INSERT INTO images VALUES('%s','%s',%d,%d,'%s','%s')"
-                    % (hashid,new_path,label,confidence,source,comment))
+                    % (hashid,new_path,int(label),int(confidence),source,comment))
         except lite.IntegrityError:
             os.remove(new_path)
             tempFile.copyBack()
             tempFile.remove()
             self.logger.warning("%s duplicated entry, insert reverted" % (hashid))
-            raise
+            return "%s duplicated entry, insert reverted" % (hashid)
+            
         except:
             # with exception, roll back
             os.remove(new_path)
@@ -229,6 +254,17 @@ class databaseAPI:
         # If the file is in file system, remove it for duplication
         if (self.filePath in path) and path!=new_path:
             os.remove(path)
+        return True
+
+
+
+    def insertMultipleImages(self,folderPath,source='other',label=0,confidence=5,comment='NULL'):
+        for root, dirs, files in os.walk(folderPath):
+            for file in files:
+                if file != ".DS_Store":
+                    self.logger.info("%s inserting" % (file))
+                    self.insertImage(root+os.sep+file,source,int(label),int(confidence),comment)
+        return True
 
     def removeImage(self,image_id):
         path=self.query_meta("SELECT path FROM images WHERE id= '%s'" % image_id)[0][0]
@@ -244,6 +280,7 @@ class databaseAPI:
         	tempFile.remove()
         	self.logger.error("exception happend in SQL, command cancelled")
         	raise
+        return True
 
     def insertModel(self,path,name='',accuracy=0):
         
@@ -261,12 +298,13 @@ class databaseAPI:
             name = path.split('/')[-1]
         try:
         	self.execute("INSERT INTO models VALUES('%s','%s',%d)"
-                    % (name,new_path,accuracy))
+                    % (name,new_path,float(accuracy)))
         except:
         	tempFile.copyBack()
         	tempFile.remove()
         	self.logger.error("exception happend in SQL, command cancelled")        	
         	raise
+        return True
 
     def removeModel(self,name):
         path=self.query_meta("SELECT path FROM models WHERE name="+name)[0][0]
@@ -281,19 +319,33 @@ class databaseAPI:
         	tempFile.remove()
         	self.logger.error("exception happend in SQL, command cancelled")
         	raise
+        return True
 
     def insertModelLabel(self,model,image_id,label,confidence):
         self.execute("INSERT INTO modelLabels VALUES(NULL,'%s','%s',%d,%d)"
-                    % (model,image_id,label,confidence))
+                    % (model,image_id,int(label),float(confidence)))
+        return True
 
-    def deleteModelLabel(self,model=None,image_id=None):
+    def removeModelLabel(self,model=None,image_id=None):
         if model!=None and image_id!=None:
             self.execute("DELETE FROM modelLabels WHERE model='%s' AND image_id='%s'" % (model,image_id))
         elif model==None and image_id!=None:
             self.execute("DELETE FROM modelLabels WHERE image_id='%s'" % (image_id))
         elif model!=None and image_id==None:
             self.execute("DELETE FROM modelLabels WHERE model='%s'" % (model))
+        return True
 
+    def getRandomImageWithWeakLabel(self):
+        count = self.query_meta("SELECT COUNT(*) FROM modelLabels")[0][0]
+        
+        if count==0:
+            image=self.query_meta("SELECT path,id FROM images WHERE label=0")
+            return {"path":image[0][0],"id":image[0][1],"labels":list(range(1,9))}
+        else:
+            entry = self.query_meta("SELECT image_id FROM modelLabels LIMIT 1")[0][0]
+            labels=self.query_meta("SELECT label FROM modelLabels WHERE image_id = '%s'" %entry)
+            path=self.query_meta("SELECT path FROM images WHERE id='%s'"%entry)[0][0]
+            return {"path":path,"id":entry,"labels":list(set([i[0] for i in labels]))}
 
     def synchronize(self):
         """
@@ -326,6 +378,54 @@ class databaseAPI:
                 self.logger.warning("%s not in database" % file)
                 self.insertModel(file)
         self.logger.info("Done")
+        return True
+
+    def feedprocess(path,source,label,confidence,comment,num_workers,inq,outq):
+        workers=[mp.Process(target=databaseAPI.hasherProcess,args=(inq,outq)) for i in range(num_workers)]
+        #printer=mp.Process(target=test.f3,args=(outq,))
+        
+        for w in workers:
+            w.start()
+        #printer.start()
+        
+        for root, dirs, files in os.walk(path):
+                for file in files:
+                    if file != ".DS_Store":
+                        #print("feed %s" % file)
+                        inq.put([root+os.sep+file,source,label,confidence,comment])
+        for i in range(num_workers):        
+            inq.put(None)
+        
+        for w in workers:
+            w.join()
+        outq.put(None)
+        #printer.join()
+        
+    def hasherProcess(inq,outq):
+        while True:
+            val=inq.get()
+            if val is None:
+                break
+            hashed=utility.hashImage(val[0])
+            #print(val[0])
+            val.append(hashed)
+            outq.put(val)
+
+
+    def insertMultipleImagesParallel(self,folderPath,hashThreadNum=2,source='other',label=0,confidence=5,comment='NULL'):
+        inq=mp.Queue()
+        outq=mp.Queue()
+        feeder=mp.Process(target=databaseAPI.feedprocess,args=(folderPath,source,int(label),int(confidence),comment,hashThreadNum,inq,outq))
+                        #self.insertImage(root+os.sep+file,source,label,confidence,comment)
+
+        feeder.start()
+        #db=database.databaseAPI('test.db','data')
+        while True:
+            val=outq.get()
+            if val is None:
+                break
+            self.insertImage(*val)
+            print(val)
 
 
 
@@ -372,7 +472,23 @@ class TestDataBase(unittest.TestCase):
         pass
 
     def test_insert_remove_model_labels(self):
-        pass
+        utility.checkFolder('testDatabase/data/images/you')
+        db=databaseAPI('testDatabase/test.db','testDatabase/data')
+        try:
+            db.insertModelLabel('model1','image1',0,1.0)
+            db.insertModelLabel('model2','image1',1,1.0)
+            db.insertModelLabel('model1','image2',2,1.0)
+            db.insertModelLabel('model1','image3',2,1.0)
+            self.assertEqual(len(db.query_meta("SELECT model, image_id, label, confidence FROM modelLabels")),4)
+            db.removeModelLabel(model='model1',image_id='image1')
+            self.assertEqual(len(db.query_meta("SELECT model, image_id, label, confidence FROM modelLabels")),3)
+            db.removeModelLabel(model='model1')
+            self.assertEqual(len(db.query_meta("SELECT model, image_id, label, confidence FROM modelLabels")),1)
+            db.removeModelLabel(image_id='image1')
+            self.assertEqual(len(db.query_meta("SELECT model, image_id, label, confidence FROM modelLabels")),0)
+
+        finally:
+            shutil.rmtree('testDatabase')
 
     def test_update(self):
         pass

@@ -16,9 +16,9 @@ class baseServer:
     A general multi-threaded server that can get and reply client
     User of this class need to implement process
     '''
-    def __init__(self, port_num):
+    def __init__(self,port_num,host=""):
         self._socket = socket(AF_INET, SOCK_STREAM)
-        self._socket.bind(("", port_num))
+        self._socket.bind((host, port_num))
         self._socket.listen(5)
         self._tp_pool = ThreadPoolExecutor(12)
 
@@ -27,11 +27,14 @@ class baseServer:
         Receive query from client and processing the query.
         Call process to handling data, and get message to return to client.
         '''
-        msghead = conn.recv(20)
-        if not msghead:
-            return
-        msglen = int(pickle.loads(msghead))
+        
         while True:
+            msghead = conn.recv(20)
+            #print("msghead: "+str(msghead))
+            if not msghead:
+                return
+            msglen = int(pickle.loads(msghead))
+
             msg = conn.recv(msglen)
             if not msg:
                 break
@@ -45,14 +48,18 @@ class baseServer:
             while len(return_msg):
                 nsent = conn.send(return_msg)
                 return_msg = return_msg[nsent:]
+        print("Done")
 
     def shutdown(self):
         self._socket.close()
 
     def start(self):
-        while True:
-            conn, addr = self._socket.accept()
-            self.handler(conn)
+        try:
+            while True:
+                conn, addr = self._socket.accept()
+                self.handler(conn)
+        finally:
+            self.shutdown()
 
     def process(self, dat, conn):
         '''
@@ -63,7 +70,7 @@ class baseServer:
         print(dat)
 
         #data to be returned to client
-        return str(dat) + " done"
+        return str(type(dat))+str(dat) + " done"
 
 if __name__ == "__main__":
     ts_server = baseServer(int(sys.argv[1]))

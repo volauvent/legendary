@@ -7,17 +7,30 @@ This module implements a database server for emotional data management.
 3. It inherits from baseServer. It uses database module as the backend.
 '''
 
-
+import multiprocessing
 import sys
-sys.append('./')
+#sys.append('./')
 from baseServer import baseServer
 from database import databaseAPI
+from configparser import SafeConfigParser
 
 
-class dbServer(baseServer, portNum):
-    def __init__(self):
-        super(dbServer, self).__init__(portNum)
-        self._database = databaseAPI()
+
+
+
+class dbServer(baseServer):
+
+    def __init__(self,portNum=None):
+        self.parser = SafeConfigParser()
+        self.parser.read('config.ini')
+        if portNum==None:
+            portNum=int(self.parser.get('dbServer', 'port'))
+        host = self.parser.get('dbServer', 'host')
+        db=self.parser.get('dbServer', 'database')
+        data=self.parser.get('dbServer', 'fileSystem')
+
+        super(dbServer, self).__init__(portNum,host)
+        self._database = databaseAPI('test.db','data')
 
     def process(self, dat, conn):
         """
@@ -30,11 +43,34 @@ class dbServer(baseServer, portNum):
         '''
         Example
         '''
-        task = dat['task']
-        command = dat['command']
-        if task == "sql":
-            result = self._postgres.query(task)
+        try:
+            print(dat)
+            task = dat['task']
+            command = dat.get('command',None)
+            if task == "query_meta":
+                result = self._database.query_meta(command)
 
+            elif task == "insertImage":
+                result = self._database.insertImage(*command)
+
+            elif task == "insertModel":
+                result = self._database.insertModel(*command)
+
+            elif task == "insertModelLabel":
+                result = self._database.insertModelLabel(*command)
+
+            elif task == "insertMultipleImagesParallel":
+                result = self._database.insertMultipleImagesParallel(*command)
+
+            elif task =="getRandomImageWithWeakLabel":
+                result = self._database.getRandomImageWithWeakLabel()
+
+            
+
+
+        except Exception as e:
+            result=e
+            raise
         return result
 
     def process_offline(self):
@@ -46,5 +82,8 @@ class dbServer(baseServer, portNum):
 
 
 if __name__ == "__main__":
-    server = dbServer()
+    if len(sys.argv) > 1:
+        server = dbServer(int(sys.argv[1]))
+    else:
+        server = dbServer()
     server.start()
