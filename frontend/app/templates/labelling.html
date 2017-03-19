@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content%}
+  	<div class="container">
+      <div class="row">
+
+
+        <div class="col-md-12">
+          <div class="col-md-6">
+            <p><b>Unlabeled image: </b></p>
+          </div>
+
+          <div class="col-md-3">
+            <button type="button" id="request-new-image" class="btn btn-primary">Request new image</button>
+          </div>
+
+          <div class="col-md-3">
+            <a href="/index"><button type="button" id="to-predict-page" class="btn btn-success">Return Predict Page</button></a>
+          </div>
+
+          <br>
+        </div>
+        
+
+        <div class="col-md-12">
+          <br><br>
+          <div class="col-md-6">
+            <img id="label-img" width = "100%"/>
+          </div>
+
+
+          <div class="col-md-3">
+            <p>Please choose one category:</p>
+            <hr>
+            <form>
+              <input type="radio" name="emotion" id="amusement" value="amusement" disabled> <p style="display:inline;color:lightgrey;" id="amusement-p">amusement</p>
+              <br><br>
+              <input type="radio" name="emotion" id="awe" value="awe" disabled> <p style="display:inline; color:lightgrey;" id="awe-p">awe</p>
+              <br><br>
+              <input type="radio" name="emotion" id="contentment" value="contentment" disabled> <p style="display:inline;color:lightgrey;" id="contentment-p">contentment</p>
+              <br><br>
+              <input type="radio" name="emotion" id="excitement" value="excitement" disabled> <p style="display:inline;color:lightgrey;" id="excitement-p">excitement</p>
+              <br><br>
+              <input type="radio" name="emotion" id="anger" value="anger" disabled> <p style="display:inline;color:lightgrey;" id="anger-p">anger</p>
+              <br><br>
+              <input type="radio" name="emotion" id="disgust" value="disgust" disabled> <p style="display:inline;color:lightgrey;" id="disgust-p">disgust</p>
+              <br><br>
+              <input type="radio" name="emotion" id="fear" value="fear" disabled> <p style="display:inline;color:lightgrey;" id="fear-p">fear</p>
+              <br><br>
+              <input type="radio" name="emotion" id="sadness" value="sadness" disabled> <p style="display:inline;color:lightgrey;" id="sadness-p">sadness</p>
+            </form> 
+          </div>
+
+
+          <div class="col-md-3">
+            <br><br><br><br><br><br><br><br>
+            <p><button type="button" id="submit-label" class="btn btn-danger">Submit</button></p>
+          </div>
+        </div>
+      </div>
+
+  	</div>
+  	
+{% endblock %}
+
