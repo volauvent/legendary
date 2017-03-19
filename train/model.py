@@ -51,6 +51,9 @@ class base_model(object):
     def load(self, filename):
         self._model = load_model(filename)
 
+    def summary(self):
+        self._model.summary()
+
 
 class pretrained_fixed(base_model):
     """

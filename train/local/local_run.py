@@ -47,6 +47,7 @@ elif job == "predict":
     processor = preprocess("resnet")
     model = base_model()
     model.load('model.h5')
+    model.summary()
     X = processor.processRaw(imgfile)
     predicted_label = class_names[model.predict_classes(X)[0]]
     print(predicted_label)

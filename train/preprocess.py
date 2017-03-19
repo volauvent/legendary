@@ -27,7 +27,7 @@ class preprocess():
         if method == "resnet":
             self._model = applications.ResNet50(weights='imagenet', include_top=False)
             self._model.layers.pop()
-            self._model.summary()
+            # self._model.summary()
         elif not method:
             self._model = None
         else:
