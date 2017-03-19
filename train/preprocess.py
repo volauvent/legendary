@@ -12,7 +12,7 @@ from keras.preprocessing import image
 from utils import translate_img, flip_img, inverse_img
 
 sys.path.append("../third-party/deep-learning-models")
-from imagenet_utils import preprocess_input, decode_predictions
+from keras.applications.resnet50 import preprocess_input
 from keras import applications
 
 class preprocess():
@@ -84,7 +84,7 @@ class preprocess():
             x = self.augmentation(x)
             x = preprocess_input(np.array(x))
             x = self.process(x)
-            X.append(x[:,0,0,:])
+            X.append(x[:, 0, 0, :])
             y += [lab] * x.shape[0]
             if len(y) % 100 == 0:
                 logging.info("Processed...{}".format(len(y)))
@@ -104,11 +104,21 @@ class preprocess():
 
     def process(self, img):
         '''
-        Preprocessing
+        Preprocessing internal implementation
         '''
         if not self._model:
             return img
         return self._model.predict(np.array(img))
+
+    def processRaw(self, imgfile):
+        """
+        Preprocessing an raw imagefile
+        """
+        img = image.load_img(imgfile, target_size=(224, 224))
+        x = image.img_to_array(img)
+        x = preprocess_input(np.expand_dims(x, axis=0))
+        x = self.process(x)
+        return x[:, 0, 0, :]
 
     def imageFeed(self):
         '''

@@ -22,10 +22,10 @@ class base_model(object):
         else:
             self._opt = opt
 
-    def fit(self, train_X, train_y, val_X=None, val_y=None, np_epoch=30):
-        self._model.fit(train_X, to_categorical(train_y, nb_classes=8),
+    def fit(self, num_classes, train_X, train_y, val_X=None, val_y=None, np_epoch=30):
+        self._model.fit(train_X, to_categorical(train_y, num_classes=num_classes),
                         nb_epoch=np_epoch,
-                        validation_data=(val_X, to_categorical(val_y, nb_classes=8)))
+                        validation_data=(val_X, to_categorical(val_y, num_classes=num_classes)))
 
     def train_on_batch(self, X, y):
         print(X.shape, y.shape)
@@ -34,16 +34,15 @@ class base_model(object):
     def predict(self, X):
         return self._model.predict(X)
 
+    def predict_classes(self, X):
+        return self._model.predict_classes(X)
+
     def conf_mat(self, X, y, class_names, savefile="confusion_matrix.png"):
-        # plt.figure()
-        # plot_confusion_matrix(cnf_matrix, classes=class_names,
-        #                       title='Confusion matrix, without normalization')
         predicted_label = self._model.predict_classes(X)
         cnf_matrix = confusion_matrix(y, predicted_label)
         plt.figure()
         plot_confusion_matrix(cnf_matrix, classes=class_names, normalize=True,
                               title='Normalized confusion matrix')
-        # plt.show()
         plt.savefig(savefile)
 
     def save(self, filename):
@@ -59,20 +58,20 @@ class pretrained_fixed(base_model):
     simple fully connected layers. Pre-trained layers will be fixed.
     """
     def __init__(self, opt="adam", input_dim=2048):
-
         super(pretrained_fixed, self).__init__(opt)
         m = Sequential()
         m.add(Dense(output_dim=128, input_dim=input_dim))
-        # m.add(Dropout(0.2))
+        m.add(Dropout(0.5))
         m.add(Activation("relu"))
         m.add(Dense(output_dim=64, input_dim=128))
-        # m.add(Dropout(0.5))
+        m.add(Dropout(0.5))
         m.add(Activation("relu"))
         m.add(Dense(output_dim=8))
         m.add(Activation("softmax"))
         m.compile(optimizer=self._opt,
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
+        self._model = m
 
 class pretrained_ft(base_model):
     """
