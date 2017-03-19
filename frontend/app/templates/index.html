@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block content%}
+  	<div class="container">
+      <div class="row">
+
+
+        <div class="col-md-6">
+          <p><b>
+          * SEDMA: Emotional Data Management and Analysis</b>
+          <!-- - SEDMA contains a whole workflow for affective level image data classification, labeling and storing. -->
+          </p>
+        </div>
+
+
+        <div class="col-md-6">
+          <p>
+          <!-- - Image emotional content classification.<br> -->
+          * 8 motion categories: amusement, awe, contentment, excitement, anger, disgust, fear and sadness.
+          </p>
+        </div>
+<!-- 
+        <div class="col-md-12">
+          <form action="imgClassify" method="post" enctype="multipart/form-data">
+          <label class="btn btn-primary btn-file">
+          <input type="file" name="heheda" style="display: none;">
+          </label>
+          <input type="submit" />
+          </form>
+        </div>
+ -->
+        <div class="col-md-12">
+          <hr>
+          <div class="col-md-10">
+            <br>
+            
+            <!-- <form action="index" method="post" enctype="multipart/form-data"> -->
+            <!--<form role="form" id="uploadForm" method="POST" enctype="multipart/form-data">-->
+              <label class="btn btn-primary btn-file">
+                choose Image
+                <input type="file" name="upload-img" id="upload-img" style="display: none;">
+              </label>
+              <button type="submit" id="submit-img" class="btn btn-primary">upload</button>
+            <!--</form>-->
+            
+            <br>
+            <p id="file-name"></p>
+          </div>
+
+
+<!--           <div class="col-md-8">
+            <br>
+            <form action="imgClassify" method="post" enctype="multipart/form-data">
+              <button type="submit" id="submit-img" class="btn btn-primary">Submit</button>
+            </form>
+          </div> -->
+
+
+          <div class="col-md-2">
+            <br>
+            <!-- <a href="/labelling"><button type="button" id="to-label-page" class="btn btn-success">Go to Label Page</button></a> -->
+            <button type="button" id="to-label-page" class="btn btn-success">Go to Label Page</button>
+          </div>
+        </div>
+
+
+        <div class="col-md-12">
+          <br>
+          <div class="col-md-6">
+            <p>Upload image: </p>
+            <img id="plot-img" width = "100%"/>
+            <!-- <input type="file" onchange="selectImage(this);"/> -->
+            <!-- <img id="plot-img"></img> -->
+          </div>
+
+
+          <div class="col-md-6"> 
+            <p>Predict emotion: </p>
+            <p id="predict-emotion" style="color:red;font-weight:bold;"></p>
+          </div>
+
+        </div>
+
+        <div class="col-md-12">
+          <hr>
+        </div>
+
+        
+      </div>
+
+  	</div>
+  	
+{% endblock %}
+

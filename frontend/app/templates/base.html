@@ -1,0 +1,207 @@
+<html>
+  <head>
+  	{% if title %}
+  	<title></title>
+  	{% else %}
+  	<title></title>
+  	{% endif %}
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/custom.css" rel="stylesheet">
+    <link href="/static/css/sweetalert.css" rel="stylesheet">
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/js/flot.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/js/d3.v3.min.js"></script>
+    <script src="/static/js/sweetalert.min.js"></script>
+    <script src="https://npmcdn.com/tether@1.2.4/dist/js/tether.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+    	<div class=col-md-12>
+        <br>
+        <h1><b>Legendary Capstone Project</b></h1>
+        <br>
+        <h3>Emotional Data Management and Analysis</h3>
+        <br>
+        <hr>
+      </div>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <ul>
+          {% for message in messages %}
+            <li> {{ message }} </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </div>
+    
+    <script>
+
+      $(document).ready(function(){
+        //console.log("In!");
+
+        // Choose image button
+        $("#upload-img").click(function(event){
+          // console.log("Browse!");
+        });
+
+
+        $("#upload-img").change(function(event){
+          if($("#upload-img")[0].files['length'] !== 0){
+            $("#file-name").html($("#upload-img")[0].files[0]['name']);
+          }
+        });
+
+
+        // Submit image button
+        $("#submit-img").click(function(event){
+          var file = $("#upload-img")[0];
+          if(file.files['length'] == 0){
+            sweetAlert("Error", "Please choose an image!", "error");
+            return;
+          }
+          
+          file = file.files[0];
+          if(!/image\/\w+/.test(file.type)){
+            sweetAlert("Error", "File is not image!", "error");
+          }
+
+          var reader = new FileReader();
+          reader.readAsDataURL(file);
+
+          reader.onload = function(evt){
+            // console.log("image upload!")
+            document.getElementById('plot-img').src = evt.target.result;
+            console.log("address: ")
+            console.log(evt.target.result);
+            // $("#predict-emotion").html("guess what?");
+            //$("#file-name").html($("#upload-img")[0].files[0]['name']);
+
+            var imageData = evt.target.result;
+            var fd = new FormData();
+            fd.append("image-up", file)
+            $.ajax({
+              url: '/imgClassify',
+              type: 'POST',
+              cache: false,
+              data: fd,
+              processData: false,
+              contentType: false,
+              success: function(response){
+                console.log("Submit!",response);
+                if (response['message']=='success') {
+                  // update prediction result
+                  $("#predict-emotion").html(response['predictResult']);
+                  swal("Success", "Submit to database!", "success"); 
+                } else {
+                  sweetAlert("Error", response['message'], "error");
+                }
+              },
+              // error: function(error){
+              //   console.log("Error POST!",error);
+              //   sweetAlert("Error", "server error", "error");
+              // }
+            });
+          }
+        });
+
+
+        $("#request-new-image").click(function(event){
+          // var weekLable = [];
+          $.ajax({
+            url: "{{ url_for('imageLable') }}", 
+            type: 'GET',
+            cache: false,
+            data: {},
+            success: function(response){
+              //console.log("GET!",response);
+              //document.getElementById('label-img').src="../upload/Spring_night.jpg";
+              $("#label-img").attr("src", response['img']);
+              var weekLable = response['label'];
+              for(var i = 0; i < weekLable.length; i++){
+                document.getElementById(weekLable[i]).disabled = true;
+                document.getElementById(weekLable[i]+"-p").style.color="LightGrey";
+              }
+
+            },
+            error: function(error){
+              //console.log("Error GET!",error);
+              sweetAlert("Error", "request new image error", "error");
+            }
+          });
+
+        });
+
+
+        $("#to-label-page").click(function(event){
+
+          $.ajax({
+            callback: $("#request-new-image").click(),
+            success: function(){
+              window.location.href = '/labelling';
+              //setTimeout(function(){
+                //$("#request-new-image").click();
+                //document.getElementById("request-new-image").click(event);
+                // 用奇葩方法settimeout解决
+             // }, 0);
+              //document.getElementById("request-new-image").click(event);
+              //window.button(button,null);
+              // window.parent.topFrame.document.getElementById("request-new-image").click();
+              // $("#request-new-image").click();
+            },
+            error: function(error){
+              //console.log("Error GET!",error);
+              sweetAlert("Error", "page not exist!", "error");
+            }
+          });
+        });
+
+
+        // $("#to-label-page").click(function(event){
+        //   $.ajax({
+        //     success: function(){
+        //       window.location.href = '/labelling';
+        //       $("#request-new-image").click();
+        //     },
+        //     error: function(error){
+        //       //console.log("Error GET!",error);
+        //       sweetAlert("Error", "page not exist!", "error");
+        //     }
+        //   });
+         
+        // });
+
+
+        $('#submit-label').click(function(event){
+          var newLable = [];
+          $("input[type=radio]:checked").each(function(){    
+            newLable.push(this.value);
+          });
+          $.ajax({
+            url: "/imageLable",
+            type: 'POST',
+            data: {'label': newLable},
+            success: function(response){
+              if (response['message']=='success') {
+                swal("Success", "Submit new label!", "success");
+                // automatically request another image
+                $("#request-new-image").click();
+              } else if(response['message']=='empty') {
+                sweetAlert("Error", "Please choose at least one emotion!", "error");
+              }
+            },
+            error: function(error){
+              sweetAlert("Error", "Network Error. Send Label Error", "error");
+            }
+          });
+
+        });
+
+
+      });
+    </script>
+  </body>
+</html>
