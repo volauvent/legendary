@@ -9,7 +9,7 @@ from socket import *
 import pickle
 import sys
 from concurrent.futures import ThreadPoolExecutor
-
+import logging
 
 class baseServer:
     '''
@@ -29,7 +29,9 @@ class baseServer:
         '''
         
         while True:
+            
             msghead = conn.recv(20)
+            logging.info("server: reading input")
             #print("msghead: "+str(msghead))
             if not msghead:
                 return
@@ -40,11 +42,15 @@ class baseServer:
                 break
             dat = pickle.loads(msg)
             return_obj = self.process(dat, conn)
+
+            logging.info("server: sending back result")
+
             return_msg = pickle.dumps(return_obj)
             return_msghead = str(len(return_msg))
             if len(return_msghead) < 10:
                 return_msghead = "0" * (10 - len(return_msghead)) + return_msghead
                 conn.send(pickle.dumps(return_msghead))
+
             while len(return_msg):
                 nsent = conn.send(return_msg)
                 return_msg = return_msg[nsent:]
@@ -57,6 +63,7 @@ class baseServer:
         try:
             while True:
                 conn, addr = self._socket.accept()
+                logging.info("server: receive connection from %s" % str(addr))
                 self.handler(conn)
         finally:
             self.shutdown()

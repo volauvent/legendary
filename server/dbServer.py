@@ -15,7 +15,7 @@ from database import databaseAPI
 from configparser import SafeConfigParser
 from train.model import pretrained_ft, pretrained_fixed, base_model
 from train.preprocess import preprocess
-
+import logging
 
 class dbServer(baseServer):
 
@@ -39,6 +39,12 @@ class dbServer(baseServer):
         data=self.parser.get('dbServer','fileSystem')
 
         super(dbServer, self).__init__(portNum,host)
+
+        
+        logging.info("server:  server starting, listening on port")
+
+        # % str(portNum))
+
         self._database = databaseAPI('test.db','data')
 
     def process(self, dat, conn):
@@ -53,7 +59,7 @@ class dbServer(baseServer):
         Example
         '''
         try:
-            print(dat)
+            logging.info("server: command received %s" % str(dat))
             task = dat['task']
             command = dat.get('command',None)
             if task == "query_meta":
@@ -83,6 +89,7 @@ class dbServer(baseServer):
         except Exception as e:
             result=e
             raise
+            return str(e)
         return result
 
     def process_offline(self):

@@ -131,7 +131,7 @@ class databaseAPI:
         ch.setLevel(logging.INFO)
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         ch.setFormatter(formatter)
-        self.logger.addHandler(ch)
+        #self.logger.addHandler(ch)
 
 
         if not os.path.isfile(dbPath):
@@ -356,7 +356,7 @@ class databaseAPI:
         rows=self.query_meta("SELECT path, id from images")
         for row in rows:
             if row[0] not in files:
-                self.logger.warning("%s not in file system" % row[1])
+                self.logger.warning("%s not in file system" % (row[1]))
                 self.removeImage(row[1])
             else:
                 files.discard(row[0])
@@ -369,13 +369,13 @@ class databaseAPI:
         rows=self.query_meta("SELECT path, name from models")
         for row in rows:
             if row[0] not in files:
-                self.logger.warning("%s not in file system" % row[1])
+                self.logger.warning("%s not in file system" % (row[1]))
                 self.removeModel(row[1])
             else:
                 files.discard(row[0])
         if len(files)!=0:
             for file in files:
-                self.logger.warning("%s not in database" % file)
+                self.logger.warning("%s not in database" % (file))
                 self.insertModel(file)
         self.logger.info("Done")
         return True

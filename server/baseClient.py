@@ -8,6 +8,7 @@ from socket import *
 import pickle
 from concurrent.futures import ThreadPoolExecutor
 from configparser import SafeConfigParser
+import logging
 
 class baseClient:
     '''
@@ -51,24 +52,29 @@ class dbClient(baseClient):
             port_num=int(self.parser.get('dbServer', 'port'))
         host = self.parser.get('dbServer', 'host')
         super(dbClient, self).__init__(port_num,host)
+        logging.info("client: starting at %s" % str(port_num))
+
 
     def query(self,q):
+        logging.info("client: sending query")
         return self.sender({"task":"query_meta","command":q})
 
     def insertImage(self,path,source='other',label=0,confidence=5,comment="NULL"):
-        #print({"task":"insertImage","command":(path,source,label,confidence,comment)})
+        logging.info("client: sending insert")
         return self.sender({"task":"insertImage","command":(path,source,label,confidence,comment)})
 
     def insertModelLabel(self,image_id,label=0,confidence=100,model='manual'):
+        logging.info("client: sending label")
         return self.sender({"task":"insertModelLabel","command":(model,image_id,label,confidence)})
 
     def getRandomImageWithWeakLabel(self):
+        logging.info("client: requesting weak label")
         return self.sender({"task":"getRandomImageWithWeakLabel","command":""})
 
     def predict(self,filePath):
+        logging.info("client: sending prediction request")
         return self.sender({"task":"predict","command":filePath})
-    #def setLabel(self,image_id,label):
-    #    return self.sender({"task":"setLabel","command":",".join(image_id,label)})
+
 
 
 if __name__ == "__main__":
