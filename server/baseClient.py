@@ -7,13 +7,13 @@ This module provides basic implementation of a client which supports sending que
 from socket import *
 import pickle
 from concurrent.futures import ThreadPoolExecutor
-
+from configparser import SafeConfigParser
 
 class baseClient:
     '''
     A basic client that can communicate with Server.
     '''
-    def __init__(self, port_num):
+    def __init__(self, port_num,host='localhost'):
         self._socket = socket(AF_INET, SOCK_STREAM)
         self._socket.connect(('localhost', port_num))
 
@@ -43,12 +43,37 @@ class baseClient:
     def query(self, q):
         return self.sender(q)
 
+class dbClient(baseClient):
+    def __init__(self,port_num = None):
+        self.parser = SafeConfigParser()
+        self.parser.read('config.ini')
+        if port_num==None:
+            port_num=int(self.parser.get('dbServer', 'port'))
+        host = self.parser.get('dbServer', 'host')
+        super(dbClient, self).__init__(port_num,host)
+
+    def query(self,q):
+        return self.sender({"task":"query_meta","command":q})
+
+    def insertImage(self,path,source='other',label=0,confidence=5,comment="NULL"):
+        #print({"task":"insertImage","command":(path,source,label,confidence,comment)})
+        return self.sender({"task":"insertImage","command":(path,source,label,confidence,comment)})
+
+    def insertModelLabel(self,image_id,label=0,confidence=100,model='manual'):
+        return self.sender({"task":"insertModelLabel","command":(model,image_id,label,confidence)})
+
+    def getRandomImageWithWeakLabel(self):
+        return self.sender({"task":"getRandomImageWithWeakLabel","command":""})
+    #def setLabel(self,image_id,label):
+    #    return self.sender({"task":"setLabel","command":",".join(image_id,label)})
+
+
 if __name__ == "__main__":
     num = 20
     tp_pool = ThreadPoolExecutor(num)
     result = []
     for i in range(num):
         client = baseClient(int(sys.argv[1]))
-        result.append(tp_pool.submit(client.sender, i))
+        result.append(tp_pool.submit(client.sender, i)) 
     for i in range(num):
         print(result[i].result())
