@@ -34,7 +34,7 @@ elif job == "offtrain":
     trainy = y[:train_num]
     valX = X[train_num:, :]
     valy = y[train_num:]
-    model.fit(len(class_names), trainX, trainy, valX, valy, np_epoch=25)
+    model.fit(len(class_names), trainX, trainy, valX, valy, np_epoch=15)
     model.save("model.h5")
     model.conf_mat(valX, valy, class_names)
 

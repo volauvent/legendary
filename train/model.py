@@ -63,13 +63,13 @@ class pretrained_fixed(base_model):
     def __init__(self, opt="adam", input_dim=2048):
         super(pretrained_fixed, self).__init__(opt)
         m = Sequential()
-        m.add(Dense(output_dim=128, input_dim=input_dim))
+        m.add(Dense(256, input_dim=input_dim))
         m.add(Dropout(0.5))
         m.add(Activation("relu"))
-        m.add(Dense(output_dim=64, input_dim=128))
+        m.add(Dense(128, input_dim=128))
         m.add(Dropout(0.5))
         m.add(Activation("relu"))
-        m.add(Dense(output_dim=8))
+        m.add(Dense(8))
         m.add(Activation("softmax"))
         m.compile(optimizer=self._opt,
                   loss='categorical_crossentropy',
