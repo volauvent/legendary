@@ -39,7 +39,7 @@
     </div>
     
     <script>
-
+      var NEW_IMG_LABEL = "EMPTY";
       $(document).ready(function(){
         //console.log("In!");
 
@@ -74,9 +74,10 @@
 
           reader.onload = function(evt){
             // console.log("image upload!")
+            $("#predict-emotion").html("please wait...");
             document.getElementById('plot-img').src = evt.target.result;
-            console.log("address: ")
-            console.log(evt.target.result);
+            // console.log("address: ")
+            // console.log(evt.target.result);
             // $("#predict-emotion").html("guess what?");
             //$("#file-name").html($("#upload-img")[0].files[0]['name']);
 
@@ -95,7 +96,7 @@
                 if (response['message']=='success') {
                   // update prediction result
                   $("#predict-emotion").html(response['predictResult']);
-                  swal("Success", "Submit to database!", "success"); 
+                  swal("Success", "upload to database and get prediction!", "success"); 
                 } else {
                   sweetAlert("Error", response['message'], "error");
                 }
@@ -120,10 +121,15 @@
               //console.log("GET!",response);
               //document.getElementById('label-img').src="../upload/Spring_night.jpg";
               $("#label-img").attr("src", response['img']);
+              // console.log(response['img'])
               var weekLable = response['label'];
+              NEW_IMG_LABEL = response['id'];
+              console.log("image id: ")
+              console.log(NEW_IMG_LABEL)
+
               for(var i = 0; i < weekLable.length; i++){
-                document.getElementById(weekLable[i]).disabled = true;
-                document.getElementById(weekLable[i]+"-p").style.color="LightGrey";
+                document.getElementById(weekLable[i]).disabled = false;
+                document.getElementById(weekLable[i]+"-p").style.color="black";
               }
 
             },
@@ -183,14 +189,23 @@
           $.ajax({
             url: "/imageLable",
             type: 'POST',
-            data: {'label': newLable},
+            data: {
+                    'label': newLable,
+                    'imgId': NEW_IMG_LABEL,
+                  },
             success: function(response){
               if (response['message']=='success') {
                 swal("Success", "Submit new label!", "success");
                 // automatically request another image
+                console.log("in submit lable: ")
+                console.log(NEW_IMG_LABEL);
+                NEW_IMG_LABEL = "EMPTY";
+                console.log(NEW_IMG_LABEL);
                 $("#request-new-image").click();
               } else if(response['message']=='empty') {
                 sweetAlert("Error", "Please choose at least one emotion!", "error");
+              } else if(response['message']=='noImg') {
+                sweetAlert("Error", "Please request a new image first!", "error");
               }
             },
             error: function(error){

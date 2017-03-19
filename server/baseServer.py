@@ -18,7 +18,7 @@ class baseServer:
     '''
     def __init__(self,port_num,host=""):
         self._socket = socket(AF_INET, SOCK_STREAM)
-        self._socket.bind((host, port_num))
+        self._socket.bind(("localhost", port_num))
         self._socket.listen(5)
         self._tp_pool = ThreadPoolExecutor(12)
 
@@ -27,15 +27,20 @@ class baseServer:
         Receive query from client and processing the query.
         Call process to handling data, and get message to return to client.
         '''
-        
+
+
+
+
         while True:
-            
+
             msghead = conn.recv(20)
-            logging.info("server: reading input")
-            #print("msghead: "+str(msghead))
+            logging.info("server: reading input.")
+            # print("msghead: "+str(msghead))
             if not msghead:
+                logging.info("server: fail reading input.")
                 return
             msglen = int(pickle.loads(msghead))
+
 
             msg = conn.recv(msglen)
             if not msg:
