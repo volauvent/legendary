@@ -64,6 +64,9 @@ class dbClient(baseClient):
 
     def getRandomImageWithWeakLabel(self):
         return self.sender({"task":"getRandomImageWithWeakLabel","command":""})
+
+    def predict(self,filePath):
+        return self.sender({"task":"predict","command":filePath})
     #def setLabel(self,image_id,label):
     #    return self.sender({"task":"setLabel","command":",".join(image_id,label)})
 

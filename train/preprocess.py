@@ -9,7 +9,7 @@ import pickle
 import os
 import logging
 from keras.preprocessing import image
-from utils import translate_img, flip_img, inverse_img
+from train.utils import translate_img, flip_img, inverse_img
 
 sys.path.append("../third-party/deep-learning-models")
 from keras.applications.resnet50 import preprocess_input
