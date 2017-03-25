@@ -19,6 +19,9 @@ class baseClient:
         self._socket = socket(AF_INET, SOCK_STREAM)
         self._socket.connect(('localhost', port_num))
 
+    def shutdown(self):
+        self._socket.close()
+
     def sender(self, obj):
         '''
         Send object to server, and get message back from server
@@ -79,11 +82,14 @@ class dbClient(baseClient):
 
 
 if __name__ == "__main__":
-    num = 5
+    num = 1000
     def testfun(port_num, msg):
         client = baseClient(port_num)
-        return client.sender(msg)
-    with ProcessPoolExecutor(num) as tp_pool:
+        result = client.sender(msg)
+        client.shutdown()
+        return result
+
+    with ProcessPoolExecutor(10) as tp_pool:
         result = []
         for i in range(num):
             # client = baseClient(int(sys.argv[1]))
