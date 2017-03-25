@@ -10,6 +10,7 @@ import pickle
 import sys
 from concurrent.futures import ThreadPoolExecutor
 import logging
+from threading import Thread
 
 class baseServer:
     '''
@@ -59,7 +60,6 @@ class baseServer:
             while len(return_msg):
                 nsent = conn.send(return_msg)
                 return_msg = return_msg[nsent:]
-        print("Done")
 
     def shutdown(self):
         self._socket.close()
@@ -69,7 +69,9 @@ class baseServer:
             while True:
                 conn, addr = self._socket.accept()
                 logging.info("server: receive connection from %s" % str(addr))
-                self.handler(conn)
+                thread = Thread(target = self.handler, args = (conn,))
+                thread.start()
+                # self.handler(conn)
         finally:
             self.shutdown()
 
@@ -85,5 +87,6 @@ class baseServer:
         return str(type(dat))+str(dat) + " done"
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     ts_server = baseServer(int(sys.argv[1]))
     ts_server.start()

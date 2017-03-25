@@ -6,9 +6,10 @@ This module provides basic implementation of a client which supports sending que
 
 from socket import *
 import pickle
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 from configparser import SafeConfigParser
 import logging
+import sys
 
 class baseClient:
     '''
@@ -78,11 +79,14 @@ class dbClient(baseClient):
 
 
 if __name__ == "__main__":
-    num = 20
-    tp_pool = ThreadPoolExecutor(num)
-    result = []
-    for i in range(num):
-        client = baseClient(int(sys.argv[1]))
-        result.append(tp_pool.submit(client.sender, i)) 
-    for i in range(num):
-        print(result[i].result())
+    num = 5
+    def testfun(port_num, msg):
+        client = baseClient(port_num)
+        return client.sender(msg)
+    with ProcessPoolExecutor(num) as tp_pool:
+        result = []
+        for i in range(num):
+            # client = baseClient(int(sys.argv[1]))
+            result.append(tp_pool.submit(testfun, int(sys.argv[1]), i))
+        for i in range(num):
+            print(result[i].result())
