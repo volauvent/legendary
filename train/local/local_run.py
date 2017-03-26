@@ -4,8 +4,8 @@ import os
 import numpy as np
 
 sys.path.append("../")
-from train.model import pretrained_ft, pretrained_fixed, base_model
-from train.preprocess import preprocess
+from model import pretrained_ft, pretrained_fixed, base_model
+from preprocess import preprocess
 
 job = "predict"
 

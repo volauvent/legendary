@@ -4,16 +4,16 @@ Preprocess Module
 This module implements pre-processing methods and data augmentation for training and testing.
 """
 import sys
+sys.path.append("../third-party/deep-learning-models")
+sys.path.append("./")
 import numpy as np
 import pickle
 import os
 import logging
 from keras.preprocessing import image
-from train.utils import translate_img, flip_img, inverse_img
-
-sys.path.append("../third-party/deep-learning-models")
 from keras.applications.resnet50 import preprocess_input
 from keras import applications
+from utils import translate_img, flip_img, inverse_img
 
 class preprocess():
     """
