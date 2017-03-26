@@ -7,7 +7,7 @@
 
 ## Usage
 
-1. Put image data into local/images
-2. Run ./preprocess.py to generate processed data
-2. cd local, and Run local_run.py to train model or predict label
+1. Put image data into train/local/images
+2. python train/preprocess.py to generate processed data
+2. python train/local/local_run.py to train model or predict label
 

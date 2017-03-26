@@ -3,11 +3,11 @@ import pickle
 import os
 import numpy as np
 
-sys.path.append("../")
-from model import pretrained_ft, pretrained_fixed, base_model
-from preprocess import preprocess
+sys.path.append("./")
+from train.model import pretrained_ft, pretrained_fixed, base_model
+from train.preprocess import preprocess
 
-job = "predict"
+job = "offtrain"
 
 if job == "ontrain":
     """
@@ -25,8 +25,8 @@ elif job == "offtrain":
     """
     train_prop = 0.7
     model = pretrained_fixed()
-    with open("data.pkl", 'rb') as f:
-        dat = pickle.load(f)
+    with open("train/local/data.pkl", 'rb') as f:
+        dat = pickle.load(f, encoding='latin1')
     X, y, class_names = dat
     sample_num = X.shape[0]
     train_num = int(sample_num*train_prop)
@@ -34,15 +34,15 @@ elif job == "offtrain":
     trainy = y[:train_num]
     valX = X[train_num:, :]
     valy = y[train_num:]
-    model.fit(len(class_names), trainX, trainy, valX, valy, np_epoch=15)
-    model.save("model.h5")
+    model.fit(len(class_names), trainX, trainy, valX, valy, np_epoch=8)
+    model.save("train/local/model.h5")
     model.conf_mat(valX, valy, class_names)
 
 elif job == "predict":
     """
     Example for predicting
     """
-    imgfile = "images/contentment/0dc2862cfc9711e2a73722000a1f9317_7.jpg"
+    imgfile = "train/local/images/contentment/0dc2862cfc9711e2a73722000a1f9317_7.jpg"
     class_names = os.listdir("images")
     processor = preprocess("resnet")
     model = base_model()
