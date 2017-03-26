@@ -6,9 +6,10 @@ from keras.optimizers import SGD
 from keras.utils.np_utils import to_categorical
 from sklearn.metrics import confusion_matrix
 
-from train.utils import plot_confusion_matrix
 import sys
 sys.path.append("../third-party/deep-learning-models/")
+sys.path.append("./")
+from utils import plot_confusion_matrix
 
 class base_model(object):
     """
