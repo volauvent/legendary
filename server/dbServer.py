@@ -9,7 +9,7 @@ This module implements a database server for emotional data management.
 
 import multiprocessing
 import sys
-sys.path.append('../')
+sys.path.append('./')
 from baseServer import baseServer
 from database import databaseAPI
 from configparser import SafeConfigParser
@@ -23,7 +23,7 @@ class dbServer(baseServer):
         class_names = labels=['disgust','excitement','anger','fear','awe','sadness','amusement','contentment','none']
         processor = preprocess("resnet")
         model = base_model()
-        model.load('../train/local/model.h5')
+        model.load('train/local/model.h5')
         model.summary()
         X = processor.processRaw(imgfile)
         predicted_label = class_names[model.predict_classes(X)[0]]
@@ -45,7 +45,7 @@ class dbServer(baseServer):
 
         # % str(portNum))
 
-        self._database = databaseAPI('test.db','data')
+        self._database = databaseAPI(db,data)
 
     def process(self, dat, conn):
         """

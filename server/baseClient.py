@@ -10,7 +10,7 @@ from concurrent.futures import ProcessPoolExecutor
 from configparser import SafeConfigParser
 import logging
 import sys
-
+sys.path.append('../')
 class baseClient:
     '''
     A basic client that can communicate with Server.

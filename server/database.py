@@ -36,7 +36,7 @@ class utility:
             return False
         return True
 
-    @staticmethod  
+    @staticmethod
     def hashImage(image):
         """
         using average hash
@@ -142,7 +142,7 @@ class databaseAPI:
 
         else:
             self.con = self.__connect(dbPath)
-            
+
         if not os.path.isdir(filePath):
             self.logger.info(filePath+" doesn't exist, will create a new one \n")
             os.makedirs(filePath)
@@ -183,13 +183,13 @@ class databaseAPI:
         except:
             e = sys.exc_info()[0]
             self.logger.error(e)
-     
+
         return None
 
     def execute(self,command):
         self.con.executescript(command)
         return True
-        
+
     def query_meta(self,command):
         #only excute SELECT commands
         if not utility.isSelect(command):
@@ -243,7 +243,7 @@ class databaseAPI:
             tempFile.remove()
             self.logger.warning("%s duplicated entry, insert reverted" % (hashid))
             return "%s duplicated entry, insert reverted" % (hashid)
-            
+
         except:
             # with exception, roll back
             os.remove(new_path)
@@ -283,10 +283,10 @@ class databaseAPI:
         return True
 
     def insertModel(self,path,name='',accuracy=0):
-        
+
         new_path=self.fileManage.getModelPath(path.split('/')[-1])
 
-        
+
         if new_path!=path:
             tempFile = tempFileHandler(self.filePath,new_path)
         else:
@@ -302,7 +302,7 @@ class databaseAPI:
         except:
         	tempFile.copyBack()
         	tempFile.remove()
-        	self.logger.error("exception happend in SQL, command cancelled")        	
+        	self.logger.error("exception happend in SQL, command cancelled")
         	raise
         return True
 
@@ -337,15 +337,17 @@ class databaseAPI:
 
     def getRandomImageWithWeakLabel(self):
         count = self.query_meta("SELECT COUNT(*) FROM modelLabels")[0][0]
-        
+
         if count==0:
-            image=self.query_meta("SELECT path,id FROM images WHERE label=0")
-            return {"path":image[0][0],"id":image[0][1],"labels":list(range(1,9))}
+            image=self.query_meta("SELECT path,id FROM images WHERE label=0 ORDER BY RANDOM() LIMIT 1")
+            if len(image)==0:
+                raise Exception("there's no weak label image")
+            return {"path":os.path.abspath(image[0][0]),"id":image[0][1],"labels":list(range(1,9))}
         else:
-            entry = self.query_meta("SELECT image_id FROM modelLabels LIMIT 1")[0][0]
+            entry = self.query_meta("SELECT image_id FROM modelLabels ORDER BY RANDOM() LIMIT 1")[0][0]
             labels=self.query_meta("SELECT label FROM modelLabels WHERE image_id = '%s'" %entry)
             path=self.query_meta("SELECT path FROM images WHERE id='%s'"%entry)[0][0]
-            return {"path":path,"id":entry,"labels":list(set([i[0] for i in labels]))}
+            return {"path":os.path.abspath(path),"id":entry,"labels":list(set([i[0] for i in labels]))}
 
     def synchronize(self):
         """
@@ -383,24 +385,24 @@ class databaseAPI:
     def feedprocess(path,source,label,confidence,comment,num_workers,inq,outq):
         workers=[mp.Process(target=databaseAPI.hasherProcess,args=(inq,outq)) for i in range(num_workers)]
         #printer=mp.Process(target=test.f3,args=(outq,))
-        
+
         for w in workers:
             w.start()
         #printer.start()
-        
+
         for root, dirs, files in os.walk(path):
                 for file in files:
                     if file != ".DS_Store":
                         #print("feed %s" % file)
                         inq.put([root+os.sep+file,source,label,confidence,comment])
-        for i in range(num_workers):        
+        for i in range(num_workers):
             inq.put(None)
-        
+
         for w in workers:
             w.join()
         outq.put(None)
         #printer.join()
-        
+
     def hasherProcess(inq,outq):
         while True:
             val=inq.get()
@@ -429,7 +431,7 @@ class databaseAPI:
 
 
 
-        
+
 class TestDataBase(unittest.TestCase):
     def test_insert_delete_image(self):
         utility.checkFolder('testDatabase')
@@ -438,7 +440,7 @@ class TestDataBase(unittest.TestCase):
             im=Image.new("RGB", (512, 512), "red")
             im.save('testDatabase/test.jpg')
             #print(utility.hashImage(im))
-            
+
             db.insertImage('testDatabase/test.jpg')
             self.assertTrue(os.path.isfile('testDatabase/data/images/other/0000000000000000.jpg'))
             self.assertEqual(db.query_meta('SELECT * FROM images where id = "0000000000000000"'),[('0000000000000000', 'testDatabase/data/images/other/0000000000000000.jpg', 0, 5, 'other', 'NULL')])
@@ -452,7 +454,7 @@ class TestDataBase(unittest.TestCase):
         db=databaseAPI('testDatabase/test.db','testDatabase/data')
         try:
             im=Image.new("RGB", (512, 512), "red")
-            
+
             im.save('testDatabase/test.jpg')
             db.insertImage('testDatabase/test.jpg')
             im2=Image.new("RGB", (512, 512))
