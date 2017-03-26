@@ -19,15 +19,18 @@ import logging
 
 class dbServer(baseServer):
 
-    def predict(self,imgfile):
-        class_names = labels=['disgust','excitement','anger','fear','awe','sadness','amusement','contentment','none']
+    def predict(self, imgfile):
+        class_names = ['disgust','excitement','anger','fear','awe','sadness','amusement','contentment','none']
         processor = preprocess("resnet")
         model = base_model()
         model.load('train/local/model.h5')
         model.summary()
         X = processor.processRaw(imgfile)
-        predicted_label = class_names[model.predict_classes(X)[0]]
-        return predicted_label
+        predicted_score = model.predict(X)[0]
+        snl = [(predicted_score[i], class_names[i]) for i in range(8)]
+        snl.sort(key=lambda x: x[0], reverse=True)
+        return snl
+
 
     def __init__(self,portNum=None):
         self.parser = SafeConfigParser()

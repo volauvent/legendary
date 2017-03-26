@@ -7,7 +7,7 @@ sys.path.append("./")
 from train.model import pretrained_ft, pretrained_fixed, base_model
 from train.preprocess import preprocess
 
-job = "offtrain"
+job = sys.argv[1]
 
 if job == "ontrain":
     """
@@ -43,11 +43,17 @@ elif job == "predict":
     Example for predicting
     """
     imgfile = "train/local/images/contentment/0dc2862cfc9711e2a73722000a1f9317_7.jpg"
-    class_names = os.listdir("images")
+    class_names = os.listdir("train/local/images")
     processor = preprocess("resnet")
     model = base_model()
-    model.load('model.h5')
+    model.load('train/local/model.h5')
     model.summary()
     X = processor.processRaw(imgfile)
-    predicted_label = class_names[model.predict_classes(X)[0]]
-    print(predicted_label)
+    predicted_score = model.predict(X)[0]
+    snl = [(predicted_score[i], class_names[i]) for i in range(8)]
+    snl.sort(key=lambda x:x[0], reverse=True)
+    print(snl)
+    print(snl[0][1])
+
+else:
+    raise ValueError("argument should be: ontrain, offtrain, predict")
