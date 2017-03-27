@@ -4,16 +4,15 @@ Preprocess Module
 This module implements pre-processing methods and data augmentation for training and testing.
 """
 import sys
+sys.path.append("./")
 import numpy as np
 import pickle
 import os
 import logging
 from keras.preprocessing import image
-from train.utils import translate_img, flip_img, inverse_img
-
-sys.path.append("../third-party/deep-learning-models")
 from keras.applications.resnet50 import preprocess_input
 from keras import applications
+from train.utils import translate_img, flip_img, inverse_img
 
 class preprocess():
     """
@@ -37,7 +36,7 @@ class preprocess():
         '''
         Read some image
         '''
-        datapath = "local/images/"
+        datapath = "train/local/images/"
         labelNames = os.listdir(datapath)
         img_paths = []
         for lab, labname in enumerate(labelNames):
@@ -63,11 +62,11 @@ class preprocess():
                     cur_num = 0
                     X, y = [], []
 
-    def offline_read(self, savefile="local/data.pkl"):
+    def offline_read(self, savefile="train/local/data.pkl"):
         """
         Read and process images.
         """
-        datapath = "local/images/"
+        datapath = "train/local/images/"
         labelNames = os.listdir(datapath)
         img_paths = []
         for lab, labname in enumerate(labelNames):
@@ -117,6 +116,7 @@ class preprocess():
         img = image.load_img(imgfile, target_size=(224, 224))
         x = image.img_to_array(img)
         x = preprocess_input(np.expand_dims(x, axis=0))
+        self._model.predict(np.array(x))
         x = self.process(x)
         return x[:, 0, 0, :]
 

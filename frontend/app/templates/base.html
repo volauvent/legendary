@@ -112,6 +112,13 @@
 
         $("#request-new-image").click(function(event){
           // var weekLable = [];
+
+          // for(var i = 0; i < weekLable.length; i++){
+          //   document.getElementById(weekLable[i]).disabled = false;
+          //   document.getElementById(weekLable[i]+"-p").style.color="black";
+          // };
+          
+
           $.ajax({
             url: "{{ url_for('imageLable') }}", 
             type: 'GET',
@@ -125,7 +132,24 @@
               var weekLable = response['label'];
               NEW_IMG_LABEL = response['id'];
               console.log("image id: ")
-              console.log(NEW_IMG_LABEL)
+              console.log(weekLable)
+
+              document.getElementById("amusement").disabled = true;
+              document.getElementById("awe").disabled = true;
+              document.getElementById("contentment").disabled = true;
+              document.getElementById("excitement").disabled = true;
+              document.getElementById("anger").disabled = true;
+              document.getElementById("disgust").disabled = true;
+              document.getElementById("fear").disabled = true;
+              document.getElementById("sadness").disabled = true;
+              document.getElementById("amusement-p").style.color="lightgrey";
+              document.getElementById("awe-p").style.color="lightgrey";
+              document.getElementById("contentment-p").style.color="lightgrey";
+              document.getElementById("excitement-p").style.color="lightgrey";
+              document.getElementById("anger-p").style.color="lightgrey";
+              document.getElementById("disgust-p").style.color="lightgrey";
+              document.getElementById("fear-p").style.color="lightgrey";
+              document.getElementById("sadness-p").style.color="lightgrey";
 
               for(var i = 0; i < weekLable.length; i++){
                 document.getElementById(weekLable[i]).disabled = false;

@@ -9,28 +9,43 @@ This module implements a database server for emotional data management.
 
 import multiprocessing
 import sys
-sys.path.append('../')
+sys.path.append('./')
 from baseServer import baseServer
 from database import databaseAPI
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 from train.model import pretrained_ft, pretrained_fixed, base_model
 from train.preprocess import preprocess
 import logging
 
 class dbServer(baseServer):
+    labels=['None',
+                'amusement',
+                'awe',
+                'contentment',
+                'anger',
+                'disgust',
+                'excitement',
+                'fear',
+                'sadness']
+    def predict(self, imgfile):
+        class_names = ['disgust','excitement','anger','fear','awe','sadness','amusement','contentment','none']
+        X = self._processor.processRaw(imgfile)
+        predicted_score = self._model.predict(X)[0]
+        snl = [(predicted_score[i], class_names[i]) for i in range(8)]
+        snl.sort(key=lambda x: x[0], reverse=True)
+        return snl
 
-    def predict(self,imgfile):
-        class_names = labels=['disgust','excitement','anger','fear','awe','sadness','amusement','contentment','none']
-        processor = preprocess("resnet")
-        model = base_model()
-        model.load('../train/local/model.h5')
-        model.summary()
-        X = processor.processRaw(imgfile)
-        predicted_label = class_names[model.predict_classes(X)[0]]
-        return predicted_label
-
+    def predict_and_insert(self,folderPath,source='other',label=0,confidence=5,comment='NULL'):
+        top2=self.predict(folderPath)[:2]
+        logging.info(str(top2))
+        hashid=self._database.insertImage(folderPath,source,label,confidence,comment).split(' ')[0]
+        logging.info(hashid)
+        self._database.insertModelLabel("testing",hashid,self.labels.index(top2[0][1].lower()),top2[0][0])
+        self._database.insertModelLabel("testing",hashid,self.labels.index(top2[1][1].lower()),top2[1][0])
+        return True
+        
     def __init__(self,portNum=None):
-        self.parser = SafeConfigParser()
+        self.parser = ConfigParser()
         self.parser.read('config.ini')
         if portNum==None:
             portNum=int(self.parser.get('dbServer','port'))
@@ -39,13 +54,17 @@ class dbServer(baseServer):
         data=self.parser.get('dbServer','fileSystem')
 
         super(dbServer, self).__init__(portNum,host)
+        self._processor = preprocess("resnet")
+        logging.info("processor loaded")
+        self._model = base_model()
+        self._model.load('train/local/model.h5')
+        logging.info("model loaded")
 
-        
         logging.info("server:  server starting, listening on port")
 
         # % str(portNum))
 
-        self._database = databaseAPI('test.db','data')
+        self._database = databaseAPI(db,data)
 
     def process(self, dat, conn):
         """
@@ -62,6 +81,7 @@ class dbServer(baseServer):
             logging.info("server: command received %s" % str(dat))
             task = dat['task']
             command = dat.get('command',None)
+
             if task == "query_meta":
                 result = self._database.query_meta(command)
 
@@ -81,14 +101,13 @@ class dbServer(baseServer):
                 result = self._database.getRandomImageWithWeakLabel()
 
             elif task =="predict":
-                result = self.predict(command)
+                result = self.predict(command)[0][1]
 
-            
+            elif task =="predict_and_insert":
+                result = self.predict_and_insert(*command)
 
 
         except Exception as e:
-            result=e
-            raise
             return str(e)
         return result
 
@@ -101,6 +120,7 @@ class dbServer(baseServer):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     if len(sys.argv) > 1:
         server = dbServer(int(sys.argv[1]))
     else:
