@@ -69,7 +69,8 @@ class baseServer:
             while True:
                 conn, addr = self._socket.accept()
                 logging.info("server: receive connection from %s" % str(addr))
-                self._tp_pool.submit(self.handler, conn)
+                #self._tp_pool.submit(self.handler, conn)
+                self.handler(conn)
 
         finally:
             self.shutdown()
