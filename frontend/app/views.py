@@ -12,7 +12,7 @@ from server.baseClient import dbClient
 
 client = dbClient()
 
-ALLOWED_EXTENSIONS=set(['png', 'jpg', 'jpeg', 'gif'])
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif', 'PNG', 'JPG', 'JPEG', 'GIF'])
 EMOTIONS = ['amusement', 'awe', 'contentment', 'anger', 'disgust', 'excitement', 'fear', 'sadness']
 EMOTIONSLABELS = {'amusement': 1, 'awe': 2, 'contentment': 3, 'anger': 4, 'disgust': 5, 'excitement': 6, 'fear': 7, 'sadness': 8}
 
@@ -164,7 +164,7 @@ def imageLable():
         weekLabel = []
         for i in range(len(weekLabelNum)):
             weekLabel.append(EMOTIONS[weekLabelNum[i] - 1])
-        # print(weekLabel)
+        print(weekLabel)
         # print(imgPath)
         return jsonify(img=reqImage, label=weekLabel, id=imgID)
 
