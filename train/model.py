@@ -66,7 +66,7 @@ class pretrained_fixed(base_model):
         m.add(Dense(256, input_dim=input_dim))
         m.add(Dropout(0.5))
         m.add(Activation("relu"))
-        m.add(Dense(128, input_dim=128))
+        m.add(Dense(128))
         m.add(Dropout(0.5))
         m.add(Activation("relu"))
         m.add(Dense(8))
