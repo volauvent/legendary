@@ -13,7 +13,7 @@ app = Flask(__name__)
 client = dbClient()
 Bootstrap(app)
 
-UPLOAD_FOLDER = os.path.abspath('.') + '/upload'
+UPLOAD_FOLDER = os.path.abspath('.') + '/frontend/upload'
 REQUEST_FOLDER = '/static/reqImg'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['REQUEST_FOLDER'] = REQUEST_FOLDER
