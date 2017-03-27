@@ -6,6 +6,9 @@ import numpy as np
 sys.path.append("./")
 from train.model import pretrained_ft, pretrained_fixed, base_model
 from train.preprocess import preprocess
+from keras.utils.vis_utils import plot_model
+from keras import applications
+from keras.models import load_model
 
 job = sys.argv[1]
 
@@ -54,6 +57,14 @@ elif job == "predict":
     snl.sort(key=lambda x:x[0], reverse=True)
     print(snl)
     print(snl[0][1])
+
+elif job == "plot":
+    model1 = applications.ResNet50(weights='imagenet', include_top=True)
+    model1.layers.pop()
+    plot_model(model1, to_file='train/local/model1.png')
+
+    model2 = load_model('train/local/model.h5')
+    plot_model(model2, to_file='train/local/model2.png')
 
 else:
     raise ValueError("argument should be: ontrain, offtrain, predict")
