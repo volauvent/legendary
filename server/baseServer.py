@@ -17,6 +17,7 @@ class baseServer:
     User of this class need to implement process
     '''
     def __init__(self,port_num,host=""):
+        logging.info("Server Port: {}".format(port_num))
         self._socket = socket(AF_INET, SOCK_STREAM)
         self._socket.bind(("localhost", port_num))
         self._socket.listen(5)
@@ -69,7 +70,7 @@ class baseServer:
             while True:
                 conn, addr = self._socket.accept()
                 logging.info("server: receive connection from %s" % str(addr))
-                #self._tp_pool.submit(self.handler, conn)
+                # self._tp_pool.submit(self.handler, conn)
                 self.handler(conn)
 
         finally:

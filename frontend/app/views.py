@@ -1,5 +1,5 @@
 from flask import jsonify, render_template, session, url_for, request, g, abort
-from app import client, app#, db
+from app import app#, db
 import json
 import os
 import shutil
@@ -8,17 +8,19 @@ import pickle
 import numpy as np
 import random
 from werkzeug import secure_filename
+from server.baseClient import dbClient
 
+client = dbClient()
 
 ALLOWED_EXTENSIONS=set(['png', 'jpg', 'jpeg', 'gif'])
 EMOTIONS = ['amusement', 'awe', 'contentment', 'anger', 'disgust', 'excitement', 'fear', 'sadness']
 EMOTIONSLABELS = {'amusement': 1, 'awe': 2, 'contentment': 3, 'anger': 4, 'disgust': 5, 'excitement': 6, 'fear': 7, 'sadness': 8}
 
 DATABASE_IMAGE_PATH = os.path.abspath('./') + "/server/data/images/other/"
-WEB_IMAGE_PATH = os.path.abspath('.') + "/app/static/reqImg/"
+WEB_IMAGE_PATH = os.path.abspath('.') + "/frontend/app/static/reqImg/"
 
 WEB_UPLOAD_PATH = os.path.abspath('.') + "/frontend/upload/"
-DATABASE_INSERT_PATH = os.path.abspath('./') + "/server/"
+DATABASE_INSERT_PATH = os.path.abspath('.') + "/server/"
 
 def moveImge(imgName, originPath, desPath):
     # print(originPath + imgName)
@@ -63,9 +65,9 @@ def imgClassify():
             # fake Data test:
             # fileMeta.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             # emotionCategory = 'guess what?'
-            print("")
-            print(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            print("")
+            # print("")
+            # print(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            # print("")
 
             fileMeta.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
@@ -145,11 +147,15 @@ def imageLable():
         # too complicated, need to be simplified
 
         imgData = client.getRandomImageWithWeakLabel()
+        # print("==========start printing important !!!!!!!!!!============")
+        # print(imgData)
+        # print("==========end printing important !!!!!!!!!!============")
+
         imgPath = imgData['path']
         imgName = imgPath.split('/')[-1]
         print(imgName)
 
-        #moveImge(imgName, DATABASE_IMAGE_PATH, WEB_IMAGE_PATH)
+        moveImge(imgName, DATABASE_IMAGE_PATH, WEB_IMAGE_PATH)
         reqImage = app.config['REQUEST_FOLDER'] + "/" + imgName
 
         weekLabelNum = imgData['labels']

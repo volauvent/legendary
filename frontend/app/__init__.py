@@ -4,13 +4,11 @@ import os
 import sys
 
 sys.path.append(os.path.abspath('./'))
-from server.baseClient import dbClient
 
 app = Flask(__name__)
 
 # app.config.from_object('config')
 
-client = dbClient()
 Bootstrap(app)
 
 UPLOAD_FOLDER = os.path.abspath('.') + '/frontend/upload'
