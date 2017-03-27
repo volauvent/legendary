@@ -77,7 +77,7 @@ class dbClient(baseClient):
 
     def predict(self,filePath):
         logging.info("client: sending prediction request")
-        return self.sender({"task":"predict","command":filePath})
+        return self.sender({"task":"predict","command":"frontend/upload/"+filePath})
 
 
 
