@@ -11,7 +11,7 @@ import shutil
 import unittest
 import logging
 import multiprocessing as mp
-
+import random
 '''
                 (0,'None');
                 (1,'amusement');
@@ -337,7 +337,10 @@ class databaseAPI:
 
     def getRandomImageWithWeakLabel(self):
         count = self.query_meta("SELECT COUNT(*) FROM modelLabels")[0][0]
-
+        imagecount=self.query_meta("SELECT COUNT(*) FROM images WHERE label=0")[0][0]
+        if imagecount!=0 and random.random()>(count/(count+imagecount)):
+            image=self.query_meta("SELECT path,id FROM images WHERE label=0 ORDER BY RANDOM() LIMIT 1")
+            return {"path":os.path.abspath(image[0][0]),"id":image[0][1],"labels":list(range(1,9))}
         if count==0:
             image=self.query_meta("SELECT path,id FROM images WHERE label=0 ORDER BY RANDOM() LIMIT 1")
             if len(image)==0:
