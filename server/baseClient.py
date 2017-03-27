@@ -65,7 +65,7 @@ class dbClient(baseClient):
 
     def insertImage(self,path,source='other',label=0,confidence=5,comment="NULL"):
         logging.info("client: sending insert")
-        return self.sender({"task":"insertImage","command":(path,source,label,confidence,comment)})
+        return self.sender({"task":"insertImage","command":("frontend/upload/"+path,source,label,confidence,comment)})
 
     def insertModelLabel(self,image_id,label=0,confidence=100,model='manual'):
         logging.info("client: sending label")
