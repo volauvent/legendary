@@ -18,7 +18,15 @@ from train.preprocess import preprocess
 import logging
 
 class dbServer(baseServer):
-
+    labels=['None',
+                'amusement',
+                'awe',
+                'contentment',
+                'anger',
+                'disgust',
+                'excitement',
+                'fear',
+                'sadness']
     def predict(self, imgfile):
         class_names = ['disgust','excitement','anger','fear','awe','sadness','amusement','contentment','none']
         X = self._processor.processRaw(imgfile)
@@ -27,7 +35,15 @@ class dbServer(baseServer):
         snl.sort(key=lambda x: x[0], reverse=True)
         return snl
 
-
+    def predict_and_insert(self,folderPath,source='other',label=0,confidence=5,comment='NULL'):
+        top2=self.predict(folderPath)[:2]
+        logging.info(str(top2))
+        hashid=self._database.insertImage(folderPath,source,label,confidence,comment).split(' ')[0]
+        logging.info(hashid)
+        self._database.insertModelLabel("testing",hashid,self.labels.index(top2[0][1].lower()),top2[0][0])
+        self._database.insertModelLabel("testing",hashid,self.labels.index(top2[1][1].lower()),top2[1][0])
+        return True
+        
     def __init__(self,portNum=None):
         self.parser = ConfigParser()
         self.parser.read('config.ini')
@@ -87,7 +103,8 @@ class dbServer(baseServer):
             elif task =="predict":
                 result = self.predict(command)[0][1]
 
-            
+            elif task =="predict_and_insert":
+                result = self.predict_and_insert(*command)
 
 
         except Exception as e:
