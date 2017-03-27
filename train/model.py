@@ -6,9 +6,9 @@ from keras.optimizers import SGD
 from keras.utils.np_utils import to_categorical
 from sklearn.metrics import confusion_matrix
 
-from train.utils import plot_confusion_matrix
 import sys
-sys.path.append("../third-party/deep-learning-models/")
+sys.path.append("./")
+from train.utils import plot_confusion_matrix
 
 class base_model(object):
     """
@@ -23,9 +23,9 @@ class base_model(object):
             self._opt = opt
 
     def fit(self, num_classes, train_X, train_y, val_X=None, val_y=None, np_epoch=30):
-        self._model.fit(train_X, to_categorical(train_y, num_classes=num_classes),
+        self._model.fit(train_X, to_categorical(train_y, num_classes),
                         nb_epoch=np_epoch,
-                        validation_data=(val_X, to_categorical(val_y, num_classes=num_classes)))
+                        validation_data=(val_X, to_categorical(val_y, num_classes)))
 
     def train_on_batch(self, X, y):
         print(X.shape, y.shape)
@@ -66,7 +66,7 @@ class pretrained_fixed(base_model):
         m.add(Dense(256, input_dim=input_dim))
         m.add(Dropout(0.5))
         m.add(Activation("relu"))
-        m.add(Dense(128, input_dim=128))
+        m.add(Dense(128))
         m.add(Dropout(0.5))
         m.add(Activation("relu"))
         m.add(Dense(8))

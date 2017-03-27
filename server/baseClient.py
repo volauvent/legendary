@@ -6,9 +6,13 @@ This module provides basic implementation of a client which supports sending que
 
 from socket import *
 import pickle
-from concurrent.futures import ThreadPoolExecutor
-from configparser import SafeConfigParser
+from concurrent.futures import ProcessPoolExecutor
+from configparser import ConfigParser
 import logging
+import sys
+sys.path.append('../')
+logging.basicConfig(level=logging.INFO)
+
 
 class baseClient:
     '''
@@ -17,6 +21,10 @@ class baseClient:
     def __init__(self, port_num,host='localhost'):
         self._socket = socket(AF_INET, SOCK_STREAM)
         self._socket.connect(('localhost', port_num))
+        logging.info("client: starting at %s" % str(port_num))
+
+    def shutdown(self):
+        self._socket.close()
 
     def sender(self, obj):
         '''
@@ -46,13 +54,12 @@ class baseClient:
 
 class dbClient(baseClient):
     def __init__(self,port_num = None):
-        self.parser = SafeConfigParser()
+        self.parser = ConfigParser()
         self.parser.read('config.ini')
         if port_num==None:
             port_num=int(self.parser.get('dbServer', 'port'))
         host = self.parser.get('dbServer', 'host')
         super(dbClient, self).__init__(port_num,host)
-        logging.info("client: starting at %s" % str(port_num))
 
 
     def query(self,q):
@@ -61,7 +68,7 @@ class dbClient(baseClient):
 
     def insertImage(self,path,source='other',label=0,confidence=5,comment="NULL"):
         logging.info("client: sending insert")
-        return self.sender({"task":"insertImage","command":(path,source,label,confidence,comment)})
+        return self.sender({"task":"insertImage","command":("frontend/upload/"+path,source,label,confidence,comment)})
 
     def insertModelLabel(self,image_id,label=0,confidence=100,model='manual'):
         logging.info("client: sending label")
@@ -73,16 +80,22 @@ class dbClient(baseClient):
 
     def predict(self,filePath):
         logging.info("client: sending prediction request")
-        return self.sender({"task":"predict","command":filePath})
+        return self.sender({"task":"predict","command":"frontend/upload/"+filePath})
 
 
 
 if __name__ == "__main__":
-    num = 20
-    tp_pool = ThreadPoolExecutor(num)
-    result = []
-    for i in range(num):
-        client = baseClient(int(sys.argv[1]))
-        result.append(tp_pool.submit(client.sender, i)) 
-    for i in range(num):
-        print(result[i].result())
+    num = 1000
+    def testfun(port_num, msg):
+        client = baseClient(port_num)
+        result = client.sender(msg)
+        client.shutdown()
+        return result
+
+    with ProcessPoolExecutor(10) as tp_pool:
+        result = []
+        for i in range(num):
+            # client = baseClient(int(sys.argv[1]))
+            result.append(tp_pool.submit(testfun, int(sys.argv[1]), i))
+        for i in range(num):
+            print(result[i].result())
