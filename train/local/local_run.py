@@ -4,7 +4,7 @@ import os
 import numpy as np
 
 sys.path.append("./")
-from train.model import pretrained_ft, pretrained_fixed, base_model
+from train.model import pretrained_ft, pretrained_fixed, base_model, small_CNN
 from train.preprocess import preprocess
 from keras.utils.vis_utils import plot_model
 from keras import applications
@@ -16,10 +16,12 @@ if job == "ontrain":
     """
     Example for online training
     """
-    model = pretrained_ft()
+    model = small_CNN()
+    model.summary()
     data_src = preprocess()
-    for X, y in data_src.read(128):
+    for X, y in data_src.online_read(128):
         model.train_on_batch(X, y)
+        print(model._model.test_on_batch(X, y))
 
 
 elif job == "offtrain":
@@ -66,5 +68,25 @@ elif job == "plot":
     model2 = load_model('train/local/model.h5')
     plot_model(model2, to_file='train/local/model2.png')
 
+elif job == "legendary":
+    datapath = "train/local/legendary/images/"
+    labelNames = os.listdir(datapath)
+    img_paths = []
+    for lab, labname in enumerate(labelNames):
+        imagefiles = os.listdir(datapath + labname)
+        for imagefile in imagefiles:
+            img_paths.append((datapath + labname + '/' + imagefile, lab))
+
+    class_names = os.listdir("train/local/images")
+    processor = preprocess("resnet")
+    model = base_model()
+    model.load('train/local/model.h5')
+    model.summary()
+    X = processor.processRaw(imgfile)
+    predicted_score = model.predict(X)[0]
+    snl = [(predicted_score[i], class_names[i]) for i in range(8)]
+    snl.sort(key=lambda x:x[0], reverse=True)
+    print(snl)
+    print(snl[0][1])
 else:
     raise ValueError("argument should be: ontrain, offtrain, predict")

@@ -9,6 +9,8 @@ from sklearn.metrics import confusion_matrix
 import sys
 sys.path.append("./")
 from train.utils import plot_confusion_matrix
+from keras.layers import Input, ZeroPadding2D, Conv2D, BatchNormalization, MaxPooling2D, AveragePooling2D
+from keras.applications.resnet50 import conv_block, identity_block
 
 class base_model(object):
     """
@@ -90,4 +92,49 @@ class pretrained_ft(base_model):
         x = Dense(8, activation='softmax', name='predictions')(x)
         self._model = Model(input=self._model.input, output=x)
         self._model.compile(optimizer=self._opt, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+        self._model.summary()
+
+
+class small_CNN(base_model):
+    """
+    A small CNN model
+    """
+    def __init__(self, opt="adam"):
+        super(small_CNN, self).__init__(opt)
+        img_input = Input(shape=(224,224,3))
+
+        bn_axis = 3
+        x = ZeroPadding2D((3, 3))(img_input)
+        # x = Conv2D(64, (7, 7), strides=(2, 2), name='conv1')(x)
+        # x = BatchNormalization(axis=bn_axis, name='bn_conv1')(x)
+        # x = Activation('relu')(x)
+        # x = MaxPooling2D((3, 3), strides=(2, 2))(x)
+
+
+        # x = conv_block(x, 3, [64, 64, 256], stage=2, block='a', strides=(1, 1))
+        # x = identity_block(x, 3, [64, 64, 256], stage=2, block='b')
+        # x = identity_block(x, 3, [64, 64, 256], stage=2, block='c')
+
+        # x = conv_block(x, 3, [128, 128, 512], stage=3, block='a')
+        # x = identity_block(x, 3, [128, 128, 512], stage=3, block='b')
+        # x = identity_block(x, 3, [128, 128, 512], stage=3, block='c')
+        # x = identity_block(x, 3, [128, 128, 512], stage=3, block='d')
+        #
+        # x = conv_block(x, 3, [256, 256, 1024], stage=4, block='a')
+        # x = identity_block(x, 3, [256, 256, 1024], stage=4, block='b')
+        # x = identity_block(x, 3, [256, 256, 1024], stage=4, block='c')
+        # x = identity_block(x, 3, [256, 256, 1024], stage=4, block='d')
+        # x = identity_block(x, 3, [256, 256, 1024], stage=4, block='e')
+        # x = identity_block(x, 3, [256, 256, 1024], stage=4, block='f')
+        #
+        x = conv_block(x, 3, [16, 16, 8], stage=5, block='a')
+        # x = identity_block(x, 3, [16, 16, 8], stage=5, block='b')
+        # x = identity_block(x, 3, [16, 16, 8], stage=5, block='c')
+
+        x = AveragePooling2D((28, 28), name='avg_pool')(x)
+        x = Flatten()(x)
+        x = Dense(8, activation='softmax')(x)
+        self._model = Model(img_input, x)
+        self._model.compile(optimizer=self._opt, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
         self._model.summary()
