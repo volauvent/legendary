@@ -13,8 +13,7 @@ sys.path.append('./')
 from baseServer import baseServer
 from database import databaseAPI
 from configparser import ConfigParser
-from train.model import pretrained_ft, pretrained_fixed, base_model
-from train.preprocess import preprocess
+from predictor import predictor
 import logging
 
 class dbServer(baseServer):
@@ -27,16 +26,8 @@ class dbServer(baseServer):
                 'excitement',
                 'fear',
                 'sadness']
-    def predict(self, imgfile):
-        class_names = ['disgust','excitement','anger','fear','awe','sadness','amusement','contentment','none']
-        X = self._processor.processRaw(imgfile)
-        predicted_score = self._model.predict(X)[0]
-        snl = [(predicted_score[i], class_names[i]) for i in range(8)]
-        snl.sort(key=lambda x: x[0], reverse=True)
-        return snl
-
     def predict_and_insert(self,folderPath,source='other',label=0,confidence=5,comment='NULL'):
-        top2=self.predict(folderPath)[:2]
+        top2=self._predictor.predict(folderPath)[:2]
         logging.info(str(top2))
         hashid=self._database.insertImage(folderPath,source,label,confidence,comment).split(' ')[0]
         logging.info(hashid)
@@ -54,11 +45,8 @@ class dbServer(baseServer):
         data=self.parser.get('dbServer','fileSystem')
 
         super(dbServer, self).__init__(portNum,host)
-        self._processor = preprocess("resnet")
-        logging.info("processor loaded")
-        self._model = base_model()
-        self._model.load('train/local/model.h5')
-        logging.info("model loaded")
+
+        self._predictor = predictor()
 
         logging.info("server:  server starting, listening on port")
 
@@ -101,7 +89,7 @@ class dbServer(baseServer):
                 result = self._database.getRandomImageWithWeakLabel()
 
             elif task =="predict":
-                result = self.predict(command)[0][1]
+                result = self._predictor.predict(command)[0][1]
 
             elif task =="predict_and_insert":
                 result = self.predict_and_insert(*command)
