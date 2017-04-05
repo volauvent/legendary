@@ -39,7 +39,7 @@ class utility:
     @staticmethod
     def hashImage(image):
         """
-        using average hash
+        using p hash
 
         """
         # if iamge is path, read it
@@ -102,6 +102,127 @@ class fileManager:
                     pathSet.add(root+os.sep+file)
         return pathSet
 
+class sqliteWrapper:
+    '''
+    this is a wrapper of sqlite
+    '''
+    def __init__(self,name):
+        try:
+            conn = lite.connect(name)
+            self.con=conn
+        except:
+            e = sys.exc_info()[0]
+            self.logger.error(e)
+
+    def close(self):
+        self.con.close()
+        return True
+
+    def execute(self,command):
+        self.con.executescript(command)
+        return True
+
+    def query_meta(self,command):
+        #only excute SELECT commands
+        if not utility.isSelect(command):
+            raise ValueError('query can only excute SELECT commands')
+            return
+        return self.con.execute(command).fetchall()
+
+class sqlDB:
+    '''
+    this is the SQL database handler
+    '''
+    def __init__(self,dbtype,location):
+        if dbtype=="sqlite":
+            self.db=sqliteWrapper(location)
+
+    def close(self):
+        return self.db.close()
+
+    def execute(self,command):
+        return self.db.execute(command)
+
+    def query_meta(self,command):
+        return self.db.query_meta(command)
+
+    def printSchemas(self):
+        string=[]
+        for (tableName,) in self.execute(
+            """
+            select NAME from SQLITE_MASTER where TYPE='table' order by NAME;
+            """
+        ):
+            string.append("{}:\n".format(tableName))
+            for (
+                columnID, columnName, columnType,
+                columnNotNull, columnDefault, columnPK,
+            ) in self.execute("pragma table_info('{}');".format(tableName)):
+                string.append("  {id}: {name}({type}){null}{default}{pk} \n".format(
+                    id=columnID,
+                    name=columnName,
+                    type=columnType,
+                    null=" not null" if columnNotNull else "",
+                    default=" [{}]".format(columnDefault) if columnDefault else "",
+                    pk=" *{}".format(columnPK) if columnPK else "",
+                ))
+        return "".join(string)
+
+    def insertModelLabel(self,model,image_id,label,confidence):
+        self.execute("INSERT INTO modelLabels VALUES(NULL,'%s','%s',%d,%d)"
+                    % (model,image_id,int(label),float(confidence)))
+        return True
+
+    def removeModelLabel(self,model=None,image_id=None):
+        if model!=None and image_id!=None:
+            self.execute("DELETE FROM modelLabels WHERE model='%s' AND image_id='%s'" % (model,image_id))
+        elif model==None and image_id!=None:
+            self.execute("DELETE FROM modelLabels WHERE image_id='%s'" % (image_id))
+        elif model!=None and image_id==None:
+            self.execute("DELETE FROM modelLabels WHERE model='%s'" % (model))
+        return True
+
+    def getRandomImageWithWeakLabel(self):
+        '''
+        this method is suppose to return a random image with weak labels
+        '''
+        count = self.query_meta("SELECT COUNT(*) FROM modelLabels")[0][0]
+        imagecount=self.query_meta("SELECT COUNT(*) FROM images WHERE label=0")[0][0]
+
+        #if imagecount!=0 and random.random()>(count/(imagecount)) and False:
+        #    image=self.query_meta("SELECT path,id FROM images WHERE label=0 ORDER BY RANDOM() LIMIT 1")
+        #    return {"path":os.path.abspath(image[0][0]),"id":image[0][1],"labels":list(range(1,9))}
+
+        #if there are no weak labels, we return a image with label none and all 8 classes.
+        if count==0:
+            image=self.query_meta("SELECT path,id FROM images WHERE label=0 ORDER BY RANDOM() LIMIT 1")
+            if len(image)==0:
+                raise Exception("there's no weak label image")
+            return {"path":os.path.abspath(image[0][0]),"id":image[0][1],"labels":list(range(1,9))}
+        else:
+            entry = self.query_meta("SELECT image_id FROM modelLabels ORDER BY RANDOM() LIMIT 1")[0][0]
+            labels=self.query_meta("SELECT label FROM modelLabels WHERE image_id = '%s'" %entry)
+            path=self.query_meta("SELECT path FROM images WHERE id='%s'"%entry)[0][0]
+            return {"path":os.path.abspath(path),"id":entry,"labels":list(set([i[0] for i in labels]))}
+
+class sqlPool:
+    def __init__(self,dbType,location):
+        self.dbType=dbType
+        self.location=location
+        self.connectionPool=[]
+
+    def pop(self):
+        if len(self.connectionPool)>0:
+            return self.connectionPool.pop()
+        else: return sqlDB(self.dbType,self.location)
+
+    def append(self,connection):
+        self.connectionPool.append(connection)
+            
+    def clear(self):
+        while len(self.connectionPool)>0:
+            i=self.connectionPool.pop()
+            i.close()
 
 class databaseAPI:
     labels=['None',
@@ -126,25 +247,21 @@ class databaseAPI:
         '''
         self.logger = logging.getLogger()
         self.logger.setLevel(logging.INFO)
-
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.INFO)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        ch.setFormatter(formatter)
+        dbType="sqlite"
         #self.logger.addHandler(ch)
 
 
         if not os.path.isfile(dbPath):
-            self.logger.info(dbPath+" doesn't exist, will create a new one \n")
-            self.con = self.__connect(dbPath)
+            logging.info(dbPath+" doesn't exist, will create a new one \n")
+            self.__connectSQL(dbType,dbPath)
             # create the three tables
             self.__initDB()
 
         else:
-            self.con = self.__connect(dbPath)
+            self.__connectSQL(dbType,dbPath)
 
         if not os.path.isdir(filePath):
-            self.logger.info(filePath+" doesn't exist, will create a new one \n")
+            logging.info(filePath+" doesn't exist, will create a new one \n")
             os.makedirs(filePath)
         self.dbPath=dbPath
         self.filePath=filePath
@@ -173,52 +290,58 @@ class databaseAPI:
 
 
     def close(self):
-        self.con.close()
+        self.sqlpool.clear()
 
-    def __connect(self,name):
+    def __connectSQL(self,dbType,name):
+        self.sqlpool=sqlPool(dbType,name)
+        #self.sql=sqlDB(dbType,name)
 
-        try:
-            conn = lite.connect(name)
-            return conn
-        except:
-            e = sys.exc_info()[0]
-            self.logger.error(e)
+    def popSql(self):
+        return self.sqlpool.pop()
 
-        return None
+    def appendSql(self,sql):
+        return self.sqlpool.append(sql)
 
+
+    #----------------------------------
+    # those are just wrapper methods
     def execute(self,command):
-        self.con.executescript(command)
-        return True
+        sql=self.sqlpool.pop()
+        out=sql.execute(command)
+        self.sqlpool.append(sql)
+        return out
 
     def query_meta(self,command):
-        #only excute SELECT commands
-        if not utility.isSelect(command):
-            raise ValueError('query can only excute SELECT commands')
-            return
-        return self.con.execute(command).fetchall()
+        sql=self.sqlpool.pop()
+        out=sql.query_meta(command)
+        self.sqlpool.append(sql)
+        return out
 
 
     def printSchemas(self):
-        string=[]
-        for (tableName,) in self.con.execute(
-            """
-            select NAME from SQLITE_MASTER where TYPE='table' order by NAME;
-            """
-        ):
-            string.append("{}:\n".format(tableName))
-            for (
-                columnID, columnName, columnType,
-                columnNotNull, columnDefault, columnPK,
-            ) in self.con.execute("pragma table_info('{}');".format(tableName)):
-                string.append("  {id}: {name}({type}){null}{default}{pk} \n".format(
-                    id=columnID,
-                    name=columnName,
-                    type=columnType,
-                    null=" not null" if columnNotNull else "",
-                    default=" [{}]".format(columnDefault) if columnDefault else "",
-                    pk=" *{}".format(columnPK) if columnPK else "",
-                ))
-        return "".join(string)
+        sql=self.sqlpool.pop()
+        out=sql.printSchemas()
+        self.sqlpool.append(sql)
+        return out
+
+    def insertModelLabel(self,model,image_id,label,confidence):
+        sql=self.sqlpool.pop()
+        out=sql.insertModelLabel(model,image_id,label,confidence)
+        self.sqlpool.append(sql)
+        return out
+
+    def removeModelLabel(self,model=None,image_id=None):
+        sql=self.sqlpool.pop()
+        out=sql.removeModelLabel(model,image_id)
+        self.sqlpool.append(sql)
+        return out
+
+    def getRandomImageWithWeakLabel(self):
+        sql=self.sqlpool.pop()
+        out=sql.getRandomImageWithWeakLabel()
+        self.sqlpool.append(sql)
+        return out
+    #-----------------------------------------
 
 
     def insertImage(self,path,source='other',label=0,confidence=5,comment="NULL",hashid=None):
@@ -262,7 +385,7 @@ class databaseAPI:
         for root, dirs, files in os.walk(folderPath):
             for file in files:
                 if file != ".DS_Store":
-                    self.logger.info("%s inserting" % (file))
+                    logging.info("%s inserting" % (file))
                     self.insertImage(root+os.sep+file,source,int(label),int(confidence),comment)
         return True
 
@@ -321,42 +444,13 @@ class databaseAPI:
         	raise
         return True
 
-    def insertModelLabel(self,model,image_id,label,confidence):
-        self.execute("INSERT INTO modelLabels VALUES(NULL,'%s','%s',%d,%d)"
-                    % (model,image_id,int(label),float(confidence)))
-        return True
 
-    def removeModelLabel(self,model=None,image_id=None):
-        if model!=None and image_id!=None:
-            self.execute("DELETE FROM modelLabels WHERE model='%s' AND image_id='%s'" % (model,image_id))
-        elif model==None and image_id!=None:
-            self.execute("DELETE FROM modelLabels WHERE image_id='%s'" % (image_id))
-        elif model!=None and image_id==None:
-            self.execute("DELETE FROM modelLabels WHERE model='%s'" % (model))
-        return True
-
-    def getRandomImageWithWeakLabel(self):
-        count = self.query_meta("SELECT COUNT(*) FROM modelLabels")[0][0]
-        imagecount=self.query_meta("SELECT COUNT(*) FROM images WHERE label=0")[0][0]
-        if imagecount!=0 and random.random()>(count/(imagecount)) and False:
-            image=self.query_meta("SELECT path,id FROM images WHERE label=0 ORDER BY RANDOM() LIMIT 1")
-            return {"path":os.path.abspath(image[0][0]),"id":image[0][1],"labels":list(range(1,9))}
-        if count==0:
-            image=self.query_meta("SELECT path,id FROM images WHERE label=0 ORDER BY RANDOM() LIMIT 1")
-            if len(image)==0:
-                raise Exception("there's no weak label image")
-            return {"path":os.path.abspath(image[0][0]),"id":image[0][1],"labels":list(range(1,9))}
-        else:
-            entry = self.query_meta("SELECT image_id FROM modelLabels ORDER BY RANDOM() LIMIT 1")[0][0]
-            labels=self.query_meta("SELECT label FROM modelLabels WHERE image_id = '%s'" %entry)
-            path=self.query_meta("SELECT path FROM images WHERE id='%s'"%entry)[0][0]
-            return {"path":os.path.abspath(path),"id":entry,"labels":list(set([i[0] for i in labels]))}
 
     def synchronize(self):
         """
         check whether sqlDB and file system is consistent
         """
-        self.logger.info("checking images")
+        logging.info("checking images")
         files=self.fileManage.getAllImageList()
         rows=self.query_meta("SELECT path, id from images")
         for row in rows:
@@ -369,7 +463,7 @@ class databaseAPI:
             for file in files:
                 self.logger.warning("%s not in database" % file)
                 self.insertImage(file,file.split('/')[-2])
-        self.logger.info("checking models")
+        logging.info("checking models")
         files=self.fileManage.getAllModelList()
         rows=self.query_meta("SELECT path, name from models")
         for row in rows:
@@ -382,7 +476,7 @@ class databaseAPI:
             for file in files:
                 self.logger.warning("%s not in database" % (file))
                 self.insertModel(file)
-        self.logger.info("Done")
+        logging.info("Done")
         return True
 
     def feedprocess(path,source,label,confidence,comment,num_workers,inq,outq):
@@ -445,13 +539,14 @@ class TestDataBase(unittest.TestCase):
             #print(utility.hashImage(im))
 
             db.insertImage('testDatabase/test.jpg')
-            self.assertTrue(os.path.isfile('testDatabase/data/images/other/0000000000000000.jpg'))
-            self.assertEqual(db.query_meta('SELECT * FROM images where id = "0000000000000000"'),[('0000000000000000', 'testDatabase/data/images/other/0000000000000000.jpg', 0, 5, 'other', 'NULL')])
-            db.removeImage('0000000000000000')
-            self.assertFalse(os.path.isfile('testDatabase/data/images/other/0000000000000000.jpg'))
-            self.assertEqual(db.query_meta('SELECT * FROM images where id = "0000000000000000"'),[])
+            self.assertTrue(os.path.isfile('testDatabase/data/images/other/0100000000000000.jpg'))
+            self.assertEqual(db.query_meta('SELECT * FROM images where id = "0100000000000000"'),[('0100000000000000', 'testDatabase/data/images/other/0100000000000000.jpg', 0, 5, 'other', 'NULL')])
+            db.removeImage('0100000000000000')
+            self.assertFalse(os.path.isfile('testDatabase/data/images/other/0100000000000000.jpg'))
+            self.assertEqual(db.query_meta('SELECT * FROM images where id = "0100000000000000"'),[])
         finally:
             shutil.rmtree('testDatabase')
+
     def test_sync(self):
         utility.checkFolder('testDatabase/data/images/you')
         db=databaseAPI('testDatabase/test.db','testDatabase/data')
@@ -466,10 +561,11 @@ class TestDataBase(unittest.TestCase):
             im2.save('testDatabase/data/images/you/asd.jpg')
             shutil.rmtree('testDatabase/data/images/other')
             db.synchronize()
-            self.assertTrue(os.path.isfile('testDatabase/data/images/you/f800000000000000.jpg'))
+            self.assertTrue(os.path.isfile('testDatabase/data/images/you/d1d1d1d1d1d1d1d1.jpg'))
             self.assertFalse(os.path.isfile('testDatabase/data/images/you/asd.jpg'))
-            self.assertEqual(db.query_meta("SELECT * FROM images"),[('f800000000000000', 'testDatabase/data/images/you/f800000000000000.jpg', 0, 5, 'you', 'NULL')])
+            self.assertEqual(db.query_meta("SELECT * FROM images"),[('d1d1d1d1d1d1d1d1', 'testDatabase/data/images/you/d1d1d1d1d1d1d1d1.jpg', 0, 5, 'you', 'NULL')])
         finally:
+
             shutil.rmtree('testDatabase')
 
 

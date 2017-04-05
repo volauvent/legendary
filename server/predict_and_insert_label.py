@@ -4,6 +4,10 @@ import os
 from os.path import isfile, join
 sys.path.append(os.path.abspath('./'))
 from server.baseClient import dbClient
+
+'''
+this is outdated. will remove soon
+'''
 client = dbClient()
 mypath = "frontend/upload"
 onlyfiles = [f for f in listdir(mypath) if (
