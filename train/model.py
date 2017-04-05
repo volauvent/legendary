@@ -39,7 +39,7 @@ class base_model(object):
     def predict_classes(self, X):
         return self._model.predict_classes(X)
 
-    def conf_mat(self, X, y, class_names, savefile="confusion_matrix.png"):
+    def conf_mat(self, X, y, class_names, savefile="train/confusion_matrix.png"):
         predicted_label = self._model.predict_classes(X)
         cnf_matrix = confusion_matrix(y, predicted_label)
         plt.figure()

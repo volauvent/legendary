@@ -9,6 +9,7 @@ from train.preprocess import preprocess
 from keras.utils.vis_utils import plot_model
 from keras import applications
 from keras.models import load_model
+from keras.utils.np_utils import to_categorical
 
 job = sys.argv[1]
 
@@ -70,23 +71,14 @@ elif job == "plot":
 
 elif job == "legendary":
     datapath = "train/local/legendary/images/"
-    labelNames = os.listdir(datapath)
-    img_paths = []
-    for lab, labname in enumerate(labelNames):
-        imagefiles = os.listdir(datapath + labname)
-        for imagefile in imagefiles:
-            img_paths.append((datapath + labname + '/' + imagefile, lab))
-
-    class_names = os.listdir("train/local/images")
     processor = preprocess("resnet")
+
+    valX, valy, label_names = processor.offline_read(datapath=datapath, savefile=None)
     model = base_model()
     model.load('train/local/model.h5')
-    model.summary()
-    X = processor.processRaw(imgfile)
-    predicted_score = model.predict(X)[0]
-    snl = [(predicted_score[i], class_names[i]) for i in range(8)]
-    snl.sort(key=lambda x:x[0], reverse=True)
-    print(snl)
-    print(snl[0][1])
+    py = model.predict_classes(valX)
+    print("Overall classificaiton rate: {}".format(np.sum(py==valy)*1.0/len(valy)))
+    model.conf_mat(valX, valy, label_names, savefile="train/legendary_confusion.png")
+
 else:
     raise ValueError("argument should be: ontrain, offtrain, predict")

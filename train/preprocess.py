@@ -62,11 +62,11 @@ class preprocess():
                     cur_num = 0
                     X, y = [], []
 
-    def offline_read(self, savefile="train/local/data.pkl"):
+    def offline_read(self, datapath="train/local/images/", savefile="train/local/data.pkl"):
         """
         Read and process images.
         """
-        datapath = "train/local/images/"
+
         labelNames = os.listdir(datapath)
         img_paths = []
         for lab, labname in enumerate(labelNames):
@@ -87,8 +87,10 @@ class preprocess():
             y += [lab] * x.shape[0]
             if len(y) % 100 == 0:
                 logging.info("Processed...{}".format(len(y)))
-        with open(savefile, 'wb') as f:
-            pickle.dump((np.vstack(X), np.array(y), labelNames), f)
+        if savefile:
+            with open(savefile, 'wb') as f:
+                pickle.dump((np.vstack(X), np.array(y), labelNames), f)
+        return (np.vstack(X), np.array(y), labelNames)
 
 
     def augmentation(self, img):
