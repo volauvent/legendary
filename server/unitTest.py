@@ -9,6 +9,10 @@ from database import databaseAPI
 
 
 class TestDataBase(unittest.TestCase):
+    """
+    unit tests
+    all the tests should individually create temp folder, temp file and delete them in the end
+    """
     def test_insert_delete_image(self):
         dbUtility.utility.checkFolder('testDatabase')
         db = databaseAPI('testDatabase/test.db', 'testDatabase/data')

@@ -7,7 +7,6 @@ import sys
 sys.path.append('../')
 from connection import connectionPool
 
-import dbUtility
 
 '''
                 (0,'None');
@@ -22,7 +21,9 @@ import dbUtility
 '''
 
 class databaseAPI:
-
+    """
+    This is the API portal to grab connections
+    """
 
     def __init__(self, dbPath=None, filePath=None):
         '''
@@ -40,102 +41,100 @@ class databaseAPI:
         if not os.path.isdir(filePath):
             logging.info(filePath + " doesn't exist, will create a new one \n")
             os.makedirs(filePath)
-        self.dbPath = dbPath
-        self.filePath = filePath
-        self.fileManage = dbUtility.fileManager(filePath)
 
     def close(self):
-        self.pool.clear()
+        self.__pool.clear()
 
     def __connectSQL(self, dbType, name, filePath):
-        self.pool = connectionPool(dbType, name, filePath)
+        self.__pool = connectionPool(dbType, name, filePath)
         # self.sql=myConnection(dbType,name)
 
     def popConnection(self):
-        return self.pool.pop()
+        return self.__pool.pop()
 
-    def appendConnection(self, sql):
-        return self.pool.append(sql)
+    def appendConnection(self, connection):
+        return self.__pool.append(connection)
 
     # ----------------------------------
     # those are just wrapper methods
+    #-----------------------------------
     def execute(self, command):
-        sql = self.pool.pop()
+        sql = self.__pool.pop()
         out = sql.execute(command)
-        self.pool.append(sql)
+        self.__pool.append(sql)
         return out
 
     def query_meta(self, command):
-        sql = self.pool.pop()
+        sql = self.__pool.pop()
         out = sql.query_meta(command)
-        self.pool.append(sql)
+        self.__pool.append(sql)
         return out
 
     def printSchemas(self):
-        sql = self.pool.pop()
+        sql = self.__pool.pop()
         out = sql.printSchemas()
-        self.pool.append(sql)
+        self.__pool.append(sql)
         return out
 
     def insertModelLabel(self, model, image_id, label, confidence):
-        sql = self.pool.pop()
+        sql = self.__pool.pop()
         out = sql.insertModelLabel(model, image_id, label, confidence)
-        self.pool.append(sql)
+        self.__pool.append(sql)
         return out
 
     def removeModelLabel(self, model=None, image_id=None):
-        sql = self.pool.pop()
+        sql = self.__pool.pop()
         out = sql.removeModelLabel(model, image_id)
-        self.pool.append(sql)
+        self.__pool.append(sql)
         return out
 
     def getRandomImageWithWeakLabel(self):
-        sql = self.pool.pop()
+        sql = self.__pool.pop()
         out = sql.getRandomImageWithWeakLabel()
-        self.pool.append(sql)
+        self.__pool.append(sql)
         return out
 
     def insertImage(self, path, source='other', label=0, confidence=5, comment="NULL", hashid=None):
-        sql = self.pool.pop()
+        sql = self.__pool.pop()
         out = sql.insertImage(path, source, label, confidence, comment, hashid)
-        self.pool.append(sql)
+        self.__pool.append(sql)
         return out
 
     def insertMultipleImages(self, folderPath, source='other', label=0, confidence=5, comment='NULL'):
-        sql = self.pool.pop()
+        sql = self.__pool.pop()
         out = sql.insertMultipleImages(folderPath, source, label, confidence, comment)
-        self.pool.append(sql)
+        self.__pool.append(sql)
         return out
 
     def removeImage(self, image_id):
-        sql = self.pool.pop()
+        sql = self.__pool.pop()
         out = sql.removeImage(image_id)
-        self.pool.append(sql)
+        self.__pool.append(sql)
         return out
 
     def insertModel(self, path, name='', accuracy=0):
-        sql = self.pool.pop()
+        sql = self.__pool.pop()
         out = sql.insertModel(path, name, accuracy)
-        self.pool.append(sql)
+        self.__pool.append(sql)
         return out
 
     def removeModel(self, name):
-        sql = self.pool.pop()
+        sql = self.__pool.pop()
         out = sql.removeModel(name)
-        self.pool.append(sql)
+        self.__pool.append(sql)
         return out
 
     def synchronize(self):
-        sql = self.pool.pop()
+        sql = self.__pool.pop()
         out = sql.synchronize()
-        self.pool.append(sql)
+        self.__pool.append(sql)
         return out
 
     def insertMultipleImagesParallel(self, folderPath, hashThreadNum=2, source='other', label=0, confidence=5,
                                      comment='NULL'):
-        sql = self.pool.pop()
+        sql = self.__pool.pop()
         out = sql.insertMultipleImagesParallel(folderPath, hashThreadNum, source, label, confidence, comment)
-        self.pool.append(sql)
+        self.__pool.append(sql)
         return out
 
 

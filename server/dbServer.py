@@ -22,6 +22,9 @@ class dbServer(baseServer):
 
     @staticmethod
     def isImg(file):
+        """
+        check to see wheter file is image
+        """
         imgExtensions=['.jpg','.png']
         file=file.lower()
         for i in imgExtensions:
@@ -30,6 +33,9 @@ class dbServer(baseServer):
         return False
 
     def predictAndInsert(self,filePath,source='other',label=0,confidence=5,comment='NULL'):
+        """
+        predict image and insert image & top2 labels
+        """
         top2=self._predictor.predict(filePath)[:2]
         logging.info(str(top2))
         hashid=self._database.insertImage(filePath,source,label,confidence,comment).split(' ')[0]
@@ -65,31 +71,29 @@ class dbServer(baseServer):
         Use multi-threading to support concurrent usage
         """
 
-        '''
-        Example
-        '''
+        connection = self._database.popConnection()
         try:
             logging.info("server: command received %s" % str(dat))
             task = dat['task']
             command = dat.get('command',None)
 
             if task == "query_meta":
-                result = self._database.query_meta(command)
+                result = connection.query_meta(command)
 
             elif task == "insertImage":
-                result = self._database.insertImage(*command)
+                result = connection.insertImage(*command)
 
             elif task == "insertModel":
-                result = self._database.insertModel(*command)
+                result = connection.insertModel(*command)
 
             elif task == "insertModelLabel":
-                result = self._database.insertModelLabel(*command)
+                result = connection.insertModelLabel(*command)
 
             elif task == "insertMultipleImagesParallel":
-                result = self._database.insertMultipleImagesParallel(*command)
+                result = connection.insertMultipleImagesParallel(*command)
 
             elif task =="getRandomImageWithWeakLabel":
-                result = self._database.getRandomImageWithWeakLabel()
+                result = connection.getRandomImageWithWeakLabel()
 
             elif task =="predict":
                 result = self._predictor.predict(command)[0][1]
@@ -97,10 +101,14 @@ class dbServer(baseServer):
             elif task =="predict_and_insert":
                 result = self.predictAndInsert(*command)
 
-
         except Exception as e:
+            logging.info("exception: " + str(e))
             return str(e)
-        logging.info(str(result))
+
+        finally:
+            self._database.appendConnection(connection)
+
+        logging.info("result: "+str(result))
         return result
 
 

@@ -4,10 +4,8 @@ import os.path
 import sqlite3 as lite
 import threading
 from shutil import copyfile
-
 import dbUtility
-from sqlWrapper import sqliteWrapper
-
+import sqlWrapper
 
 class myConnection():
     '''
@@ -15,8 +13,7 @@ class myConnection():
     '''
 
     def __init__(self, dbtype, dbPath, filePath, lock):
-        if dbtype == "sqlite":
-            self.db = sqliteWrapper(dbPath)
+        self.db=sqlWrapper.sqlWrapperFinder(dbtype,dbPath)
         self.filePath = filePath
         self.fileManage = dbUtility.fileManager(filePath)
         self.lock = lock
@@ -28,9 +25,18 @@ class myConnection():
         return self.db.execute(command)
 
     def query_meta(self, command):
+        """
+        query, only accept SELECT
+        :param command: SQL command
+        :return: query return
+        """
         return self.db.query_meta(command)
 
     def printSchemas(self):
+        """
+        get table info of DB
+        :return: table info as string
+        """
         string = []
         for (tableName,) in self.query_meta(
                 """
@@ -58,6 +64,12 @@ class myConnection():
         return True
 
     def removeModelLabel(self, model=None, image_id=None):
+        """
+        remove model labels that qualify the input.
+        :param model: model name
+        :param image_id: image hash id
+        :return:
+        """
         if model is not None and image_id is not None:
             self.execute("DELETE FROM modelLabels WHERE model='%s' AND image_id='%s'" % (model, image_id))
         elif model is None and image_id is not None:
@@ -71,12 +83,6 @@ class myConnection():
         this method is suppose to return a random image with weak labels
         '''
         count = self.query_meta("SELECT COUNT(*) FROM modelLabels")[0][0]
-        #imagecount = self.query_meta("SELECT COUNT(*) FROM images WHERE label=0")[0][0]
-
-        # if imagecount!=0 and random.random()>(count/(imagecount)) and False:
-        #    image=self.query_meta("SELECT path,id FROM images WHERE label=0 ORDER BY RANDOM() LIMIT 1")
-        #    return {"path":os.path.abspath(image[0][0]),"id":image[0][1],"labels":list(range(1,9))}
-
         # if there are no weak labels, we return a image with label none and all 8 classes.
         if count == 0:
             image = self.query_meta("SELECT path,id FROM images WHERE label=0 ORDER BY RANDOM() LIMIT 1")
@@ -88,6 +94,10 @@ class myConnection():
             labels = self.query_meta("SELECT label FROM modelLabels WHERE image_id = '%s'" % entry)
             path = self.query_meta("SELECT path FROM images WHERE id='%s'" % entry)[0][0]
             return {"path": os.path.abspath(path), "id": entry, "labels": list(set([i[0] for i in labels]))}
+
+    # ------------------------------------------
+    # Those are wrapper around methods that modify file system, they have to be controlled using lock
+    #------------------------------------------
 
     def insertImage(self, path, source='other', label=0, confidence=5, comment="NULL", hashid=None):
         with self.lock:
@@ -118,9 +128,15 @@ class myConnection():
         with self.lock:
             self.__insertMultipleImagesParallel(folderPath, hashThreadNum, source, label, confidence, comment)
 
-    def __insertImage(self, path, source='other', label=0, confidence=5, comment="NULL", hashid=None):
+    #------------------------------------------
+    #those are methods that modify file system.
+    #------------------------------------------
 
-        if hashid == None:
+    def __insertImage(self, path, source='other', label=0, confidence=5, comment="NULL", hashid=None):
+        """
+        Insert single image
+        """
+        if hashid is None:
             hashid = str(dbUtility.utility.hashImage(path))
         new_path = self.fileManage.getImagePath(hashid + "." + path.split('.')[-1], source)
         # put possible duplicate file to temp handler
@@ -154,6 +170,10 @@ class myConnection():
         return hashid
 
     def __insertMultipleImages(self, folderPath, source='other', label=0, confidence=5, comment='NULL'):
+        """
+        this is the single thread version of multi image insertion. Use multiprocessing version for speed
+
+        """
         for root, dirs, files in os.walk(folderPath):
             for file in files:
                 if file != ".DS_Store":
@@ -162,10 +182,15 @@ class myConnection():
         return True
 
     def __removeImage(self, image_id):
+        """
+        remove a single image
+        :param image_id: image hash id
+        :return: bool
+        """
         path = self.query_meta("SELECT path FROM images WHERE id= '%s'" % image_id)[0][0]
         if path == None or path == '':
             logging.warning("not exist")
-            return
+            return False
 
         tempFile = dbUtility.tempFileHandler(self.filePath, path)
         try:
@@ -178,6 +203,13 @@ class myConnection():
         return True
 
     def __insertModel(self, path, name='', accuracy=0):
+        """
+        insert a machine learning model
+        :param path: path to model
+        :param name: name of model
+        :param accuracy: accuracy of model, default is 0
+        :return:
+        """
 
         new_path = self.fileManage.getModelPath(path.split('/')[-1])
 
@@ -232,6 +264,7 @@ class myConnection():
             for file in files:
                 logging.warning("%s not in database" % file)
                 self.insertImage(file, file.split('/')[-2])
+
         logging.info("checking models")
         files = self.fileManage.getAllModelList()
         rows = self.query_meta("SELECT path, name from models")
@@ -250,12 +283,22 @@ class myConnection():
 
     @staticmethod
     def feedprocess(path, source, label, confidence, comment, num_workers, inq, outq):
+        """
+        this is a worker method for multiprocessing image insertion
+        :param path: path to folder
+        :param source:
+        :param label:
+        :param confidence:
+        :param comment:
+        :param num_workers: number of hashing workers
+        :param inq:
+        :param outq:
+        :return:
+        """
         workers = [mp.Process(target=myConnection.hasherProcess, args=(inq, outq)) for i in range(num_workers)]
-        # printer=mp.Process(target=test.f3,args=(outq,))
 
         for w in workers:
             w.start()
-        # printer.start()
 
         for root, dirs, files in os.walk(path):
             for file in files:
@@ -268,10 +311,15 @@ class myConnection():
         for w in workers:
             w.join()
         outq.put(None)
-        # printer.join()
 
     @staticmethod
     def hasherProcess(inq, outq):
+        """
+        this is a worker method for multiprocessing image insertion
+        :param inq: input multiprocessing shared quene
+        :param outq: outpur queue
+        :return:
+        """
         while True:
             val = inq.get()
             if val is None:
@@ -283,14 +331,22 @@ class myConnection():
 
     def __insertMultipleImagesParallel(self, folderPath, hashThreadNum=2, source='other', label=0, confidence=5,
                                        comment='NULL'):
+        """
+        this is a method for multiprocessing image insertion
+        :param folderPath: path to folder that contain images
+        :param hashThreadNum:
+        :param source: source of images, default is 'other'
+        :param label: label of all the images, default is 0-None
+        :param confidence: confidence of labelling(0-5), default is 5
+        :param comment: comment
+        :return:
+        """
         inq = mp.Queue()
         outq = mp.Queue()
         feeder = mp.Process(target=myConnection.feedprocess,
                             args=(folderPath, source, int(label), int(confidence), comment, hashThreadNum, inq, outq))
-        # self.insertImage(root+os.sep+file,source,label,confidence,comment)
 
         feeder.start()
-        # db=database.databaseAPI('test.db','data')
         while True:
             val = outq.get()
             if val is None:
@@ -300,6 +356,9 @@ class myConnection():
 
 
 class connectionPool:
+    """
+    connection pool
+    """
     def __init__(self, dbType, location, filePath):
         self.dbType = dbType
         self.location = location
@@ -308,15 +367,26 @@ class connectionPool:
         self.lock = threading.RLock()
 
     def pop(self):
+        """
+        pop a connection, or create a new one if shortage
+        :return: connection obj
+        """
         if len(self.connectionPool) > 0:
             return self.connectionPool.pop()
         else:
             return myConnection(self.dbType, self.location, self.filePath, self.lock)
 
     def append(self, connection):
+        """
+        append the connection back
+        :param connection: connection obj
+        """
         self.connectionPool.append(connection)
 
     def clear(self):
+        """
+        delete stock connections
+        """
         while len(self.connectionPool) > 0:
             i = self.connectionPool.pop()
             i.close()
