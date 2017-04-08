@@ -19,6 +19,7 @@ from predictor import predictor
 import logging
 
 class dbServer(baseServer):
+
     @staticmethod
     def isImg(file):
         imgExtensions=['.jpg','.png']
@@ -99,6 +100,7 @@ class dbServer(baseServer):
 
         except Exception as e:
             return str(e)
+        logging.info(str(result))
         return result
 
 
@@ -109,7 +111,7 @@ class dbServer(baseServer):
         #find all jpg and png files inside
 
         onlyfiles = [f for f in os.listdir(folderPath) if (
-            os.path.isfile(os.path.join(mypath, f)) and dbServer.isImg(f))]
+            os.path.isfile(os.path.join(folderPath, f)) and dbServer.isImg(f))]
 
         for f in onlyfiles:
             # print(f)
