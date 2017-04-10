@@ -1,6 +1,7 @@
 from train.model import pretrained_ft, pretrained_fixed, base_model
 from train.preprocess import preprocess
 import logging
+import threading
 
 class predictor:
     '''
@@ -12,6 +13,8 @@ class predictor:
         '''
         init tensorflow instance
         '''
+        self.lock=threading.RLock()
+
         self._processor = preprocess(preprocessor)
         logging.info("processor loaded")
         self._model = base_model()
@@ -19,9 +22,9 @@ class predictor:
         logging.info("model loaded")
 
     def predict(self, imgfile):
-        
-        X = self._processor.processRaw(imgfile)
-        predicted_score = self._model.predict(X)[0]
+        with self.lock:
+            X = self._processor.processRaw(imgfile)
+            predicted_score = self._model.predict(X)[0]
         snl = [(predicted_score[i], predictor.class_names[i]) for i in range(8)]
         snl.sort(key=lambda x: x[0], reverse=True)
         return snl
