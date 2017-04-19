@@ -6,6 +6,7 @@ import numpy as np
 sys.path.append("./")
 from train.model import pretrained_ft, pretrained_fixed, base_model, small_CNN
 from train.preprocess import preprocess
+from train.utils import topk_acc
 from keras.utils.vis_utils import plot_model
 from keras import applications
 from keras.models import load_model
@@ -76,8 +77,12 @@ elif job == "legendary":
     valX, valy, label_names = processor.offline_read(datapath=datapath, savefile=None)
     model = base_model()
     model.load('train/local/model.h5')
-    py = model.predict_classes(valX)
-    print("Overall classificaiton rate: {}".format(np.sum(py==valy)*1.0/len(valy)))
+    predicted_score = model.predict(valX)
+
+    print("Overall classificaiton rate: {}".format(topk_acc(predicted_score, valy, 1)))
+    print("Top 2 classificaiton rate: {}".format(topk_acc(predicted_score, valy, 2)))
+    print("Top 3 classificaiton rate: {}".format(topk_acc(predicted_score, valy, 3)))
+
     model.conf_mat(valX, valy, label_names, savefile="train/legendary_confusion.png")
 
 else:

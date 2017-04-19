@@ -78,3 +78,13 @@ def plot_confusion_matrix(cm, classes,
     plt.tight_layout()
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
+
+
+def topk_acc(scores, labels, k=1):
+    result = 0.0
+    for j in range(scores.shape[0]):
+        snl = [(scores[j, i], i) for i in range(8)]
+        snl.sort(key=lambda x: x[0], reverse=True)
+        if labels[j] in np.array(snl[:k])[:, 1]:
+            result += 1.0
+    return result/len(labels)
