@@ -3,6 +3,7 @@ import os.path
 import sqlite3 as lite
 import sys
 import dbUtility
+import threading
 
 """
 Add all SQL DB wrapper here.
@@ -101,6 +102,8 @@ class sqliteWrapper(AbstractWrapper):
                 self.con=self.initDB(dbPath)
             else:
                 self.con = self.connect(dbPath)
+
+            self.sqlLock=threading.RLock()
         except:
 
             e = sys.exc_info()[0]
@@ -108,7 +111,7 @@ class sqliteWrapper(AbstractWrapper):
             sys.exit(0)
 
     def connect(self,dbPath):
-        return lite.connect(dbPath)
+        return lite.connect(dbPath,check_same_thread=False)
 
     def checkDB(self, dbPath):
         return os.path.isfile(dbPath)
@@ -145,11 +148,12 @@ class sqliteWrapper(AbstractWrapper):
         return True
 
     def execute(self, command):
-        return self.con.executescript(command)
+        with self.sqlLock:
+            return self.con.executescript(command)
 
     def query_meta(self, command):
         # only excute SELECT commands
         if not dbUtility.utility.isSelect(command):
             raise ValueError('query can only excute SELECT commands')
-
-        return self.con.execute(command).fetchall()
+        with self.sqlLock:
+            return self.con.execute(command).fetchall()
