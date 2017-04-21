@@ -23,6 +23,9 @@ class utility:
     score_table_columns = [("id", "INTEGER PRIMARY KEY"), ("model", "TEXT"), ("image_id", "TEXT"), ("label", "INTEGER"),
                            ("confidence", "REAL")]
     labeltype_table_columns = [("id", "INTEGER PRIMARY KEY"), ("name", "TEXT")]
+    label_count_table_columns = [("id","TEXT PRIMATY KEY UNIQUE"),]
+
+
     @staticmethod
     def checkFolder(path):
         if not os.path.isdir(path):
@@ -30,7 +33,8 @@ class utility:
 
     @staticmethod
     def isSelect(command):
-        if (command.split(' ')[0]).lower()!='select':
+        first=(command.strip().split(' ')[0]).lower()
+        if first!='select' and first!='pragma':
             return False
         return True
 

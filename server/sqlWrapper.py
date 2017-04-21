@@ -96,14 +96,14 @@ class sqliteWrapper(AbstractWrapper):
     def __init__(self, dbPath):
         try:
             exist = self.checkDB(dbPath)
-
+            self.sqlLock=threading.RLock()
             if not exist:
                 logging.info(dbPath + " doesn't exist, will create a new one \n")
                 self.con=self.initDB(dbPath)
             else:
                 self.con = self.connect(dbPath)
 
-            self.sqlLock=threading.RLock()
+            
         except:
 
             e = sys.exc_info()[0]
@@ -117,6 +117,7 @@ class sqliteWrapper(AbstractWrapper):
         return os.path.isfile(dbPath)
 
     def initDB(self,dbPath):
+
         self.con=self.connect(dbPath)
         create_image_table = "CREATE TABLE images (" + ','.join(
             [i + " " + j for i, j in dbUtility.utility.image_table_columns]) + ");"
@@ -149,11 +150,13 @@ class sqliteWrapper(AbstractWrapper):
 
     def execute(self, command):
         with self.sqlLock:
-            return self.con.executescript(command)
+            out = self.con.executescript(command)
+        return out
 
     def query_meta(self, command):
         # only excute SELECT commands
         if not dbUtility.utility.isSelect(command):
             raise ValueError('query can only excute SELECT commands')
         with self.sqlLock:
-            return self.con.execute(command).fetchall()
+            out=self.con.execute(command).fetchall()
+        return out

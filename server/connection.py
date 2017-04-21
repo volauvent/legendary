@@ -40,14 +40,14 @@ class myConnection():
         string = []
         for (tableName,) in self.query_meta(
                 """
-            select NAME from SQLITE_MASTER where TYPE='table' order by NAME;
-            """
+                select NAME from SQLITE_MASTER where TYPE='table' order by NAME;
+                """
         ):
             string.append("{}:\n".format(tableName))
             for (
                     columnID, columnName, columnType,
                     columnNotNull, columnDefault, columnPK,
-            ) in self.execute("pragma table_info('{}');".format(tableName)):
+            ) in self.query_meta("pragma table_info('{}');".format(tableName)):
                 string.append("  {id}: {name}({type}){null}{default}{pk} \n".format(
                     id=columnID,
                     name=columnName,
@@ -365,6 +365,7 @@ class connectionPool:
         self.connectionPool = []
         self.filePath = filePath
         self.lock = threading.RLock()
+        self.connectionPool.append(myConnection(self.dbType, self.location, self.filePath, self.lock))
 
     def pop(self):
         """
