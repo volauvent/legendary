@@ -23,8 +23,12 @@ class utility:
     score_table_columns = [("id", "INTEGER PRIMARY KEY"), ("model", "TEXT"), ("image_id", "TEXT"), ("label", "INTEGER"),
                            ("confidence", "REAL")]
     labeltype_table_columns = [("id", "INTEGER PRIMARY KEY"), ("name", "TEXT")]
-    label_count_table_columns = [("id","TEXT PRIMATY KEY UNIQUE"),]
 
+    @staticmethod
+    def checkStrong(topCount,totalCount):
+        totalCountThreshold=5
+        ratioThreshold=0.6
+        return (totalCount>=totalCountThreshold and topCount/totalCount>ratioThreshold)
 
     @staticmethod
     def checkFolder(path):

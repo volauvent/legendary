@@ -61,7 +61,30 @@ class myConnection():
     def insertModelLabel(self, model, image_id, label, confidence):
         self.execute("INSERT INTO modelLabels VALUES(NULL,'%s','%s',%d,%d)"
                      % (model, image_id, int(label), float(confidence)))
+        self.weakToStrong(image_id)
         return True
+
+    def weakToStrong(self,image_id):
+        totalCount = self.query_meta("SELECT COUNT(*) FROM modelLabels WHERE image_id='%s'" % image_id)[0][0]
+        topCount=(0,0)
+
+        for i in range(len(dbUtility.utility.labels)):
+            count=self.query_meta("SELECT COUNT(*) FROM modelLabels WHERE label=%d AND image_id='%s'" % (i,image_id))[0][0]
+            
+            if count>topCount[1]:
+                topCount=(i,count)
+        logging.debug("total %d top %d"% (totalCount,topCount[1]))
+
+        if dbUtility.utility.checkStrong(topCount[1],totalCount):
+            self.execute("""
+                UPDATE images
+                SET label=%d
+                WHERE id = '%s'
+                """ %(topCount[0],image_id))
+            self.removeModelLabel(image_id=image_id)
+            logging.debug("image '%s' converted to strong label %d"% (image_id,topCount[0]))
+            return True
+        return False
 
     def removeModelLabel(self, model=None, image_id=None):
         """
