@@ -1,4 +1,3 @@
-
 Without Reweighting:
   validation set:
     Overall classificaiton rate: 0.5852070367305824
@@ -18,3 +17,23 @@ With Reweighting:
     Overall classificaiton rate: 0.27164502164502163
     Top 2 classificaiton rate: 0.4296536796536797
     Top 3 classificaiton rate: 0.5898268398268398
+
+Random Prediction without Reweighting (baseline)
+  validation set
+    Overall classificaiton rate: 0.12461776450696119
+    Top 2 classificaiton rate: 0.24963125517142137
+    Top 3 classificaiton rate: 0.3789617584631435
+  legendary test set
+    Overall classificaiton rate: 0.10930735930735931
+    Top 2 classificaiton rate: 0.2326839826839827
+    Top 3 classificaiton rate: 0.35714285714285715
+
+Random Prediction with Reweighting (baseline)
+  validation set
+    Overall classificaiton rate: 0.17052199877684643
+    Top 2 classificaiton rate: 0.31963880994351906
+    Top 3 classificaiton rate: 0.46627333884951616
+  legendary test set
+    Overall classificaiton rate: 0.13203463203463203
+    Top 2 classificaiton rate: 0.2846320346320346
+    Top 3 classificaiton rate: 0.4199134199134199
