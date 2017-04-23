@@ -19,8 +19,6 @@ from predictor import predictor
 import logging
 
 class dbServer(baseServer):
-<<<<<<< HEAD
-
     @staticmethod
     def isImg(file):
         """
@@ -37,20 +35,8 @@ class dbServer(baseServer):
         """
         predict image and insert image & top2 labels
         """
-        top2=self._predictor.predict(filePath)[:2]
-=======
-    labels=['None',
-                'amusement',
-                'awe',
-                'contentment',
-                'anger',
-                'disgust',
-                'excitement',
-                'fear',
-                'sadness']
-    def predict_and_insert(self,folderPath,source='other',label=0,confidence=5,comment='NULL'):
-        top2=self._predictor.predict(folderPath)[:2]
->>>>>>> tmp
+        prediction=self._predictor.predict(filePath)
+        top2=prediction[:2]
         logging.info(str(top2))
         hashid=self._database.insertImage(filePath,source,label,confidence,comment)
         if hashid:
@@ -58,7 +44,7 @@ class dbServer(baseServer):
             logging.info(hashid)
             self._database.insertModelLabel("testing",hashid,databaseAPI.labels.index(top2[0][1].lower()),top2[0][0])
             self._database.insertModelLabel("testing",hashid,databaseAPI.labels.index(top2[1][1].lower()),top2[1][0])
-        return True
+        return prediction
         
     def __init__(self,portNum=None):
         self.parser = ConfigParser()
