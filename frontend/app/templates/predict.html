@@ -3,14 +3,14 @@
 <!--[if IE 9]> <html lang="en" class="ie9"> <![endif]-->  
 <!--[if !IE]><!--> <html lang="en"> <!--<![endif]-->  
 <head>
-    <title>SEDMA labelling</title>
+    <title>SEDMA predict</title>
     <!-- Meta -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">    
-    <link rel="shortcut icon" href="static/images/favicon.png"> 
+    <link rel="shortcut icon" href="static/images/favicon.png">
     <link href='http://fonts.googleapis.com/css?family=Lato:300,400,300italic,400italic' rel='stylesheet' type='text/css'>
     <link href='http://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'> 
     <!-- Global CSS -->
@@ -33,7 +33,7 @@
                 <a class="ajax-link" id="to-index-page" href="index">
                     <span class="logo-title">SEDMA</span>
                 </a>
-            </h1><!--//logo-->              
+            </h1><!--//logo-->               
             <nav id="main-nav" class="main-nav navbar-right" role="navigation">
                 <div class="navbar-header">
                     <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-collapse">
@@ -60,77 +60,60 @@
     </header><!--//header-->
 
 
-    <section id="demo" class="license section">
-
-        <div class="cta-container">
-            <div class="speech-bubble-2">
-                <h3 class="title text-center">Labelling image emotion</h3>                
-                <!-- <p class="intro">Upload image and predict emotion</p> -->
-            </div><!--//speech-bubble-->
-        </div><!--//cta-container-->
-
-
+    <section id="license" class="license section text-center">
         <div class="container">
-            <!-- <div class="row"> -->
-            <div class="col-md-12 text-center">
+            <!-- <div class="col-md-12 text-center license-inner">
 
+            </div> -->
+
+            <div class="cta-container">
+                <div class="speech-bubble-2">
+                    <h3 class="title text-center">Upload image and predict emotion</h3>                
+                    <!-- <p class="intro">Upload image and predict emotion</p> -->
+                </div><!--//speech-bubble-->
+            </div><!--//cta-container-->
+
+
+
+            <div class="col-md-12 text-center">
                 <div class="btns">
-                    <a class="btn btn-cta-primary" id="request-new-image">Request new image</a>
+                    <!-- <a class="btn btn-cta-secondary" href="" target="_blank">Predict Demo</a> -->
+                    <label class="btn btn-cta-secondary btn-file">
+                        choose Image
+                        <input type="file" name="upload-img" id="upload-img" style="display: none;">
+                    </label>
+                    <a class="btn btn-cta-primary" id="submit-img">upload</a>
                     <br>
                     <p id="file-name"></p>
+                    <br><br>
                 </div>
             </div>
-        
 
-            <div class="col-md-12">
-                <br><br>
-                <div class="col-md-6 text-center">
+            <div class="col-md-12 text-center">
+                <div class="col-md-7">
                     <div class="license-inner">
-                        <p><b><i class="fa fa-picture-o"></i>  Randomly queried image: </b></p>
+                        <p><b><i class="fa fa-picture-o"></i>   uploaded image:</b></p>
                         <hr>
-                        <img id="label-img" width = "100%"/>
+                        <img id="plot-img" width = "100%"/>
                     </div>
                 </div>
-
-
-                <div class="col-md-3">
-                    <!-- <div class="license-inner"> -->
-                        <p><b><i class="fa fa-pencil-square-o"></i>  Please choose one category:</b></p>
-                        <small><p>* Bold labels are recommended.</p></small>
-                        <hr>
-                        <form>
-                            <input type="radio" name="emotion" id="amusement" value="amusement" disabled> <p style="display:inline;color:lightgrey;" id="amusement-p">amusement</p>
-                            <br><br>
-                            <input type="radio" name="emotion" id="awe" value="awe" disabled> <p style="display:inline; color:lightgrey;" id="awe-p">awe</p>
-                            <br><br>
-                            <input type="radio" name="emotion" id="contentment" value="contentment" disabled> <p style="display:inline;color:lightgrey;" id="contentment-p">contentment</p>
-                            <br><br>
-                            <input type="radio" name="emotion" id="excitement" value="excitement" disabled> <p style="display:inline;color:lightgrey;" id="excitement-p">excitement</p>
-                            <br><br>
-                            <input type="radio" name="emotion" id="anger" value="anger" disabled> <p style="display:inline;color:lightgrey;" id="anger-p">anger</p>
-                            <br><br>
-                            <input type="radio" name="emotion" id="disgust" value="disgust" disabled> <p style="display:inline;color:lightgrey;" id="disgust-p">disgust</p>
-                            <br><br>
-                            <input type="radio" name="emotion" id="fear" value="fear" disabled> <p style="display:inline;color:lightgrey;" id="fear-p">fear</p>
-                            <br><br>
-                            <input type="radio" name="emotion" id="sadness" value="sadness" disabled> <p style="display:inline;color:lightgrey;" id="sadness-p">sadness</p>
-                        </form>
-                    <!-- </div> -->
-                </div>
-
-
-                <div class="col-md-3">
-                    <br><br><br><br><br><br><br><br>
-                    <p><button type="button" id="submit-label" class="btn btn-danger">Submit label</button></p>
+                <div class="col-md-5">
+                    <div class="license-inner">
+                        <p><b><i class="fa fa-flag-o"></i>   predict emotion:</b></p>
+                        <hr><br>
+                        <p id="predict-emotion" style="color:red;font-weight:bold;font-size:30px"></p>
+                    </div>
                 </div>
             </div>
+            
         </div>
-          <!-- </div> -->
-    </section><!--//promo-->
+    </section>
+
+    <section id="license" class="license section text-center">
+      <br><br>
+    </section>
 
 
-
-      
     <!-- ******FOOTER****** --> 
     <footer class="footer">
         <div class="container text-center">
@@ -154,16 +137,13 @@
       $(document).ready(function(){
         // Choose image button
         $("#upload-img").click(function(event){
-          // console.log("Browse!");
         });
-
 
         $("#upload-img").change(function(event){
           if($("#upload-img")[0].files['length'] !== 0){
             $("#file-name").html($("#upload-img")[0].files[0]['name']);
           }
         });
-
 
         // Submit image button
         $("#submit-img").click(function(event){
@@ -182,10 +162,8 @@
           reader.readAsDataURL(file);
 
           reader.onload = function(evt){
-            // console.log("image upload!")
             $("#predict-emotion").html("please wait...");
             document.getElementById('plot-img').src = evt.target.result;
-
             var imageData = evt.target.result;
             var fd = new FormData();
             fd.append("image-up", file)
@@ -200,7 +178,7 @@
                 console.log("Submit!",response);
                 if (response['message']=='success') {
                   // update prediction result
-                  console.log(response['predictResult'][0][0]);
+                  console.log(response['predictResult'])
                   $("#predict-emotion").html(response['predictResult']);
                   swal("Success", "upload to database and get prediction!", "success"); 
                 } else {
@@ -226,35 +204,26 @@
               console.log("image id: ")
               console.log(weekLable)
 
-              // document.getElementById("amusement").disabled = true;
-              // document.getElementById("awe").disabled = true;
-              // document.getElementById("contentment").disabled = true;
-              // document.getElementById("excitement").disabled = true;
-              // document.getElementById("anger").disabled = true;
-              // document.getElementById("disgust").disabled = true;
-              // document.getElementById("fear").disabled = true;
-              // document.getElementById("sadness").disabled = true;
-              document.getElementById("amusement").disabled = false;
-              document.getElementById("awe").disabled = false;
-              document.getElementById("contentment").disabled = false;
-              document.getElementById("excitement").disabled = false;
-              document.getElementById("anger").disabled = false;
-              document.getElementById("disgust").disabled = false;
-              document.getElementById("fear").disabled = false;
-              document.getElementById("sadness").disabled = false;
-              document.getElementById("amusement-p").style.color="black";
-              document.getElementById("awe-p").style.color="black";
-              document.getElementById("contentment-p").style.color="black";
-              document.getElementById("excitement-p").style.color="black";
-              document.getElementById("anger-p").style.color="black";
-              document.getElementById("disgust-p").style.color="black";
-              document.getElementById("fear-p").style.color="black";
-              document.getElementById("sadness-p").style.color="black";
+              document.getElementById("amusement").disabled = true;
+              document.getElementById("awe").disabled = true;
+              document.getElementById("contentment").disabled = true;
+              document.getElementById("excitement").disabled = true;
+              document.getElementById("anger").disabled = true;
+              document.getElementById("disgust").disabled = true;
+              document.getElementById("fear").disabled = true;
+              document.getElementById("sadness").disabled = true;
+              document.getElementById("amusement-p").style.color="lightgrey";
+              document.getElementById("awe-p").style.color="lightgrey";
+              document.getElementById("contentment-p").style.color="lightgrey";
+              document.getElementById("excitement-p").style.color="lightgrey";
+              document.getElementById("anger-p").style.color="lightgrey";
+              document.getElementById("disgust-p").style.color="lightgrey";
+              document.getElementById("fear-p").style.color="lightgrey";
+              document.getElementById("sadness-p").style.color="lightgrey";
 
               for(var i = 0; i < weekLable.length; i++){
-                // document.getElementById(weekLable[i]).disabled = false;
-                document.getElementById(weekLable[i]+"-p").style.color="darkred";
-                document.getElementById(weekLable[i]+"-p").style.font="italic bold 20px arial,serif";
+                document.getElementById(weekLable[i]).disabled = false;
+                document.getElementById(weekLable[i]+"-p").style.color="black";
               }
 
             },
@@ -291,6 +260,7 @@
             }
           });
         });
+
 
         $("#to-label-page").click(function(event){
 
@@ -340,8 +310,6 @@
           });
 
         });
-
-
       });
     </script>
 

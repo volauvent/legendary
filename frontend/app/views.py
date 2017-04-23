@@ -36,6 +36,13 @@ def index():
 
 
 @app.route('/')
+@app.route('/predict')
+def predict():
+    # if request.method == 'GET':
+    return render_template('predict.html', title='predict')
+
+
+@app.route('/')
 @app.route('/labelling')
 def labelling():
     # if request.method == 'GET':
@@ -75,7 +82,8 @@ def imgClassify():
 
             client.insertImage(filename)
 
-            emotionCategory = client.predict(filename)
+            emotionCategory = client.predict_and_insert(filename)
+            emotionCategory.sort(key=lambda x: -x[0])
 
             ################
             # add prediction logic
@@ -86,7 +94,7 @@ def imgClassify():
             # image store folder path: UPLOAD_FOLDER in __init__.py
             # predict result: emotionCategory(string)
 
-            return jsonify(message='success', predictResult=emotionCategory)
+            return jsonify(message='success', predictResult=emotionCategory[0][1])
         else:
             print("File format error!")
             return jsonify(message='File format error!')
@@ -99,8 +107,6 @@ def imgClassify():
 
 @app.route('/imageLable', methods=['POST', 'GET'])
 def imageLable():
-
-
 
     if request.method == 'POST':
         # add a new label of given picture into the database
