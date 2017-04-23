@@ -32,7 +32,7 @@ class preprocess():
         else:
             raise NotImplementedError("Method " + str(method) + " not implemented.")
 
-    def online_read(self, batch_size=128, metadata=None):
+    def online_read(self, train_batch_size=128, train_prop=0.7, val_batch_size=128, metadata=None, nb_epoch=5):
         '''
         Read some image
         '''
@@ -44,12 +44,19 @@ class preprocess():
             for imagefile in imagefiles:
                 img_paths.append((datapath + labname + '/' + imagefile, lab))
 
-        X, y = [], []
+        X, y, valX, valy = [], [], [], []
         cur_num = 0
-        y = []
-        while True:
-            np.random.shuffle(img_paths)
-            for img_path, lab in img_paths:
+        round_num = 5
+        epoch = 0
+        train_num = int(len(img_paths)*train_prop)
+        train_img_paths = img_paths[:train_num]
+        val_img_paths = img_paths[train_num:]
+        if val_batch_size == -1:
+            val_batch_size = len(val_img_paths)
+        while epoch < nb_epoch:
+            epoch += 1
+            np.random.shuffle(train_img_paths)
+            for img_path, lab in train_img_paths:
                 img = image.load_img(img_path, target_size=(224, 224))
                 x = image.img_to_array(img)
                 x = self.augmentation(x)
@@ -57,10 +64,22 @@ class preprocess():
                 X.append(x)
                 y += [lab] * x.shape[0]
                 cur_num += x.shape[0]
-                if cur_num >= batch_size:
-                    yield np.vstack(X), np.array(y)
+                if cur_num >= train_batch_size:
+                    if round_num >= 5:
+                        np.random.shuffle(val_img_paths)
+                        for val_img_path, val_lab in val_img_paths[:val_batch_size]:
+                            img = image.load_img(val_img_path, target_size=(224, 224))
+                            x = image.img_to_array(img)
+                            x = preprocess_input(np.array([x]))
+                            valX.append(x)
+                            valy += [val_lab]
+                        yield np.vstack(X), np.array(y), np.vstack(valX), np.vstack(valy)
+                        round_num = 0
+                    else:
+                        yield np.vstack(X), np.array(y), np.array([]), np.array([])
+                    round_num += 1
                     cur_num = 0
-                    X, y = [], []
+                    X, y, valX, valy = [], [], [], []
 
     def offline_read(self, datapath="train/local/images/", savefile="train/local/data.pkl"):
         """

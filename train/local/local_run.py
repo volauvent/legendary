@@ -14,7 +14,7 @@ from keras.utils.np_utils import to_categorical
 
 job = sys.argv[1]
 
-if job == "ontrain":
+if job == "ontrain_small":
     """
     Example for online training
     """
@@ -24,6 +24,21 @@ if job == "ontrain":
     for X, y in data_src.online_read(128):
         model.train_on_batch(X, y)
         print(model._model.test_on_batch(X, y))
+
+elif job == "ontrain_big":
+    """
+    Example for online training
+    """
+    model = pretrained_ft()
+    # model.summary()
+    data_src = preprocess()
+
+    for X, y, valX, valy in data_src.online_read(train_batch_size=16, train_prop=0.7, val_batch_size=256, nb_epoch=1):
+        model.train_on_batch(X, y)
+        print('.')
+        if valX.shape[0] > 0:
+            print(model._model.test_on_batch(valX, valy))
+    model.save("train/local/model_big.h5")
 
 
 elif job == "offtrain":
@@ -41,9 +56,17 @@ elif job == "offtrain":
     trainy = y[:train_num]
     valX = X[train_num:, :]
     valy = y[train_num:]
-    model.fit(len(class_names), trainX, trainy, valX, valy, np_epoch=8)
+    # weight = [np.sum(trainy == i) for i in range(len(class_names))]
+    # weight = {i: np.min(weight)*1.0/weight[i] for i in range(len(class_names))}
+    weight = {}
+    model.fit(len(class_names), trainX, trainy, valX, valy,  np_epoch=8, class_weight=weight)
     model.save("train/local/model.h5")
     model.conf_mat(valX, valy, class_names)
+
+    predicted_score = model.predict(valX)
+    print("Overall classificaiton rate: {}".format(topk_acc(predicted_score, valy, 1)))
+    print("Top 2 classificaiton rate: {}".format(topk_acc(predicted_score, valy, 2)))
+    print("Top 3 classificaiton rate: {}".format(topk_acc(predicted_score, valy, 3)))
 
 elif job == "predict":
     """
@@ -85,5 +108,45 @@ elif job == "legendary":
 
     model.conf_mat(valX, valy, label_names, savefile="train/legendary_confusion.png")
 
+elif job == "random":
+    train_prop = 0.7
+    with open("train/local/data.pkl", 'rb') as f:
+        dat = pickle.load(f, encoding='latin1')
+    X, y, class_names = dat
+    sample_num = X.shape[0]
+    train_num = int(sample_num * train_prop)
+    valX = X[train_num:, :]
+    trainy = y[:train_num]
+    valy = y[train_num:]
+
+    p = [np.sum(trainy == i)/train_num for i in range(len(class_names))]
+    predicted_score = np.random.randn(valX.shape[0], 8)
+    print("Random Prediction without Reweighting (baseline)")
+    print("  validation set")
+    print("    Overall classificaiton rate: {}".format(topk_acc(predicted_score, valy, 1)))
+    print("    Top 2 classificaiton rate: {}".format(topk_acc(predicted_score, valy, 2)))
+    print("    Top 3 classificaiton rate: {}".format(topk_acc(predicted_score, valy, 3)))
+    predicted_score = np.random.multinomial(10, p, valX.shape[0])
+    print("Random Prediction with Reweighting (baseline)")
+    print("  validation set")
+    print("    Overall classificaiton rate: {}".format(topk_acc(predicted_score, valy, 1)))
+    print("    Top 2 classificaiton rate: {}".format(topk_acc(predicted_score, valy, 2)))
+    print("    Top 3 classificaiton rate: {}".format(topk_acc(predicted_score, valy, 3)))
+
+    datapath = "train/local/legendary/images/"
+    processor = preprocess("resnet")
+    valX, valy, label_names = processor.offline_read(datapath=datapath, savefile=None)
+    predicted_score = np.random.randn(valX.shape[0], 8)
+    print("Random Prediction without Reweighting (baseline)")
+    print("  legendary test set")
+    print("    Overall classificaiton rate: {}".format(topk_acc(predicted_score, valy, 1)))
+    print("    Top 2 classificaiton rate: {}".format(topk_acc(predicted_score, valy, 2)))
+    print("    Top 3 classificaiton rate: {}".format(topk_acc(predicted_score, valy, 3)))
+    predicted_score = np.random.multinomial(10, p, valX.shape[0])
+    print("Random Prediction with Reweighting (baseline)")
+    print("  legendary test set")
+    print("    Overall classificaiton rate: {}".format(topk_acc(predicted_score, valy, 1)))
+    print("    Top 2 classificaiton rate: {}".format(topk_acc(predicted_score, valy, 2)))
+    print("    Top 3 classificaiton rate: {}".format(topk_acc(predicted_score, valy, 3)))
 else:
-    raise ValueError("argument should be: ontrain, offtrain, predict")
+    raise ValueError("argument should be: ontrain_small, ontrain_big, offtrain, predict, legendary, random")
