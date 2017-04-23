@@ -80,9 +80,7 @@ class dbClient(baseClient):
 
     def predict(self,filePath):
         logging.info("client: sending prediction request")
-        out=self.sender({"task":"predict","command":"frontend/upload/"+filePath})
-        out.sort(key= lambda i:i[0])
-        return out
+        return self.sender({"task":"predict","command":"frontend/upload/"+filePath})
     
     def predict_and_insert(self,filePath,source='other',label=0,confidence=5,comment='NULL'):
         logging.info("client: sending predict_and_insert request")
