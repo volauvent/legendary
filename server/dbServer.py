@@ -14,6 +14,7 @@ from os.path import isfile, join
 sys.path.append('./')
 from baseServer import baseServer
 from database import databaseAPI
+from dbUtility import utility
 from configparser import ConfigParser
 from predictor import predictor
 import logging
@@ -42,8 +43,8 @@ class dbServer(baseServer):
         if hashid:
             hashid=hashid.split(' ')[0]
             logging.info(hashid)
-            self._database.insertModelLabel("testing",hashid,databaseAPI.labels.index(top2[0][1].lower()),top2[0][0])
-            self._database.insertModelLabel("testing",hashid,databaseAPI.labels.index(top2[1][1].lower()),top2[1][0])
+            self._database.insertModelLabel("testing",hashid,utility.labels.index(top2[0][1].lower()),top2[0][0])
+            self._database.insertModelLabel("testing",hashid,utility.labels.index(top2[1][1].lower()),top2[1][0])
         return prediction
         
     def __init__(self,portNum=None):
