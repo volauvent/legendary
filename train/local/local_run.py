@@ -41,7 +41,10 @@ elif job == "offtrain":
     trainy = y[:train_num]
     valX = X[train_num:, :]
     valy = y[train_num:]
-    model.fit(len(class_names), trainX, trainy, valX, valy, np_epoch=8)
+    weight = [np.sum(trainy == i) for i in range(len(class_names))]
+    weight = {i: np.min(weight)*1.0/weight[i] for i in range(len(class_names))}
+    weight = {}
+    model.fit(len(class_names), trainX, trainy, valX, valy,  np_epoch=8, class_weight=weight)
     model.save("train/local/model.h5")
     model.conf_mat(valX, valy, class_names)
 
