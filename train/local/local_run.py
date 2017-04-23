@@ -30,13 +30,15 @@ elif job == "ontrain_big":
     Example for online training
     """
     model = pretrained_ft()
-    model.summary()
+    # model.summary()
     data_src = preprocess()
 
-    for X, y, valX, valy in data_src.online_read(train_batch_size=16, train_prop=0.7, val_batch_size=128):
+    for X, y, valX, valy in data_src.online_read(train_batch_size=16, train_prop=0.7, val_batch_size=256, nb_epoch=1):
         model.train_on_batch(X, y)
-        if valX != None:
+        print('.')
+        if valX.shape[0] > 0:
             print(model._model.test_on_batch(valX, valy))
+    model.save("train/local/model_big.h5")
 
 
 elif job == "offtrain":
@@ -54,9 +56,9 @@ elif job == "offtrain":
     trainy = y[:train_num]
     valX = X[train_num:, :]
     valy = y[train_num:]
-    weight = [np.sum(trainy == i) for i in range(len(class_names))]
-    weight = {i: np.min(weight)*1.0/weight[i] for i in range(len(class_names))}
-    # weight = {}
+    # weight = [np.sum(trainy == i) for i in range(len(class_names))]
+    # weight = {i: np.min(weight)*1.0/weight[i] for i in range(len(class_names))}
+    weight = {}
     model.fit(len(class_names), trainX, trainy, valX, valy,  np_epoch=8, class_weight=weight)
     model.save("train/local/model.h5")
     model.conf_mat(valX, valy, class_names)

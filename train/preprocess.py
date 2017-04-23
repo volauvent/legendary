@@ -32,7 +32,7 @@ class preprocess():
         else:
             raise NotImplementedError("Method " + str(method) + " not implemented.")
 
-    def online_read(self, train_batch_size=128, train_prop=0.7, val_batch_size=128, metadata=None):
+    def online_read(self, train_batch_size=128, train_prop=0.7, val_batch_size=128, metadata=None, nb_epoch=5):
         '''
         Read some image
         '''
@@ -47,10 +47,14 @@ class preprocess():
         X, y, valX, valy = [], [], [], []
         cur_num = 0
         round_num = 5
+        epoch = 0
         train_num = int(len(img_paths)*train_prop)
         train_img_paths = img_paths[:train_num]
         val_img_paths = img_paths[train_num:]
-        while True:
+        if val_batch_size == -1:
+            val_batch_size = len(val_img_paths)
+        while epoch < nb_epoch:
+            epoch += 1
             np.random.shuffle(train_img_paths)
             for img_path, lab in train_img_paths:
                 img = image.load_img(img_path, target_size=(224, 224))
@@ -72,7 +76,7 @@ class preprocess():
                         yield np.vstack(X), np.array(y), np.vstack(valX), np.vstack(valy)
                         round_num = 0
                     else:
-                        yield np.vstack(X), np.array(y), None, None
+                        yield np.vstack(X), np.array(y), np.array([]), np.array([])
                     round_num += 1
                     cur_num = 0
                     X, y, valX, valy = [], [], [], []

@@ -100,7 +100,7 @@ class pretrained_ft(base_model):
         # x = Dense(8, activation='softmax', name='predictions')(x)
         # self._model = Model(input=self._model.input, output=x)
         self._model.compile(optimizer=self._opt, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-        self._model.summary()
+        # self._model.summary()
 
         # self._model = load_model('train/local/model.h5')
 
