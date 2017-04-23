@@ -82,9 +82,12 @@ def imgClassify():
 
             # client.insertImage(filename)
 
-            emotionCategory = client.predict_and_insert(filename)
-            emotionCategory.sort(key=lambda x: -x[0])
 
+
+            emotionCategory = client.predict_and_insert(filename)
+            # emotionCategory.sort(key=lambda x: -x[0])
+
+            
             ################
             # add prediction logic
             ################
@@ -159,7 +162,9 @@ def imageLable():
 
         imgPath = imgData['path']
         imgName = imgPath.split('/')[-1]
-        print(imgName)
+        
+        if not os.path.isdir(WEB_IMAGE_PATH):
+            os.makedirs(WEB_IMAGE_PATH)
 
         moveImge(imgName, DATABASE_IMAGE_PATH, WEB_IMAGE_PATH)
         reqImage = app.config['REQUEST_FOLDER'] + "/" + imgName
