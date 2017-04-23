@@ -86,7 +86,11 @@ def imgClassify():
 
             emotionCategory = client.predict_and_insert(filename)
             # emotionCategory.sort(key=lambda x: -x[0])
-
+            predictEmotion = []
+            for emotion in emotionCategory:
+                predictEmotion.append("{:.1f}".format(emotion[0]*100))
+                predictEmotion.append(emotion[1])
+            # print(predictEmotion)
             
             ################
             # add prediction logic
@@ -97,7 +101,7 @@ def imgClassify():
             # image store folder path: UPLOAD_FOLDER in __init__.py
             # predict result: emotionCategory(string)
 
-            return jsonify(message='success', predictResult=emotionCategory[0][1])
+            return jsonify(message='success', predictResult=predictEmotion)
         else:
             print("File format error!")
             return jsonify(message='File format error!')
@@ -175,7 +179,7 @@ def imageLable():
         weekLabel = []
         for i in range(len(weekLabelNum)):
             weekLabel.append(EMOTIONS[weekLabelNum[i] - 1])
-        print(weekLabel)
+        # print(weekLabel)
         # print(imgPath)
         return jsonify(img=reqImage, label=weekLabel, id=imgID)
 

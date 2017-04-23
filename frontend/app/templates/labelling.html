@@ -200,8 +200,10 @@
                 console.log("Submit!",response);
                 if (response['message']=='success') {
                   // update prediction result
-                  console.log(response['predictResult'][0][0]);
-                  $("#predict-emotion").html(response['predictResult']);
+                  // console.log(response['predictResult'][0][0]);
+                  var predictLable = response['predictResult'];
+
+                  $("#predict-emotion").html(predictLable[1]);
                   swal("Success", "upload to database and get prediction!", "success"); 
                 } else {
                   sweetAlert("Error", response['message'], "error");
@@ -223,8 +225,8 @@
               // console.log(response['img'])
               var weekLable = response['label'];
               NEW_IMG_LABEL = response['id'];
-              console.log("image id: ")
-              console.log(weekLable)
+              // console.log("image id: ")
+              // console.log(weekLable)
 
               // document.getElementById("amusement").disabled = true;
               // document.getElementById("awe").disabled = true;

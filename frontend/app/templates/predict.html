@@ -101,7 +101,7 @@
                     <div class="license-inner">
                         <p><b><i class="fa fa-flag-o"></i>   predict emotion:</b></p>
                         <hr><br>
-                        <p id="predict-emotion" style="color:red;font-weight:bold;font-size:30px"></p>
+                        <p id="predict-emotion" align="left" style="color:darkred;font-weight:bold;font-size:20px;"></p>
                     </div>
                 </div>
             </div>
@@ -179,7 +179,8 @@
                 if (response['message']=='success') {
                   // update prediction result
                   console.log(response['predictResult'])
-                  $("#predict-emotion").html(response['predictResult']);
+                  var predictLable = response['predictResult'];
+                  $("#predict-emotion").html(predictLable[1]+"<br>"+"Prob:  "+predictLable[0]+"%"+"<br><br>"+predictLable[3]+"<br>"+"Prob:  "+predictLable[2]+"%");
                   swal("Success", "upload to database and get prediction!", "success"); 
                 } else {
                   sweetAlert("Error", response['message'], "error");
