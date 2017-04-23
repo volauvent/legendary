@@ -22,10 +22,11 @@ class base_model(object):
         else:
             self._opt = opt
 
-    def fit(self, num_classes, train_X, train_y, val_X=None, val_y=None, np_epoch=30):
+    def fit(self, num_classes, train_X, train_y, val_X=None, val_y=None, np_epoch=30, class_weight={}):
         self._model.fit(train_X, to_categorical(train_y, num_classes),
                         nb_epoch=np_epoch,
-                        validation_data=(val_X, to_categorical(val_y, num_classes)))
+                        validation_data=(val_X, to_categorical(val_y, num_classes)),
+                        class_weight=class_weight)
 
     def train_on_batch(self, X, y):
         print(X.shape, y.shape)
