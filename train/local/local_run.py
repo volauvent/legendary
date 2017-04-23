@@ -43,10 +43,15 @@ elif job == "offtrain":
     valy = y[train_num:]
     weight = [np.sum(trainy == i) for i in range(len(class_names))]
     weight = {i: np.min(weight)*1.0/weight[i] for i in range(len(class_names))}
-    weight = {}
+    # weight = {}
     model.fit(len(class_names), trainX, trainy, valX, valy,  np_epoch=8, class_weight=weight)
     model.save("train/local/model.h5")
     model.conf_mat(valX, valy, class_names)
+
+    predicted_score = model.predict(valX)
+    print("Overall classificaiton rate: {}".format(topk_acc(predicted_score, valy, 1)))
+    print("Top 2 classificaiton rate: {}".format(topk_acc(predicted_score, valy, 2)))
+    print("Top 3 classificaiton rate: {}".format(topk_acc(predicted_score, valy, 3)))
 
 elif job == "predict":
     """

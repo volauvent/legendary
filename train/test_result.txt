@@ -1,0 +1,20 @@
+
+Without Reweighting:
+  validation set:
+    Overall classificaiton rate: 0.5852070367305824
+    Top 2 classificaiton rate: 0.7754074180666979
+    Top 3 classificaiton rate: 0.8569989567219484
+  legendary test set:
+    Overall classificaiton rate: 0.24783549783549783
+    Top 2 classificaiton rate: 0.45021645021645024
+    Top 3 classificaiton rate: 0.5735930735930735
+
+With Reweighting:
+  validation set:
+    Overall classificaiton rate: 0.5558153757599741
+    Top 2 classificaiton rate: 0.7521315249847106
+    Top 3 classificaiton rate: 0.8346224412706407
+  legendary test set:
+    Overall classificaiton rate: 0.27164502164502163
+    Top 2 classificaiton rate: 0.4296536796536797
+    Top 3 classificaiton rate: 0.5898268398268398
