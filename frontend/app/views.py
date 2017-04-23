@@ -80,7 +80,7 @@ def imgClassify():
 
             #moveImge(filename, WEB_UPLOAD_PATH, DATABASE_INSERT_PATH)
 
-            client.insertImage(filename)
+            # client.insertImage(filename)
 
             emotionCategory = client.predict_and_insert(filename)
             emotionCategory.sort(key=lambda x: -x[0])
