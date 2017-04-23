@@ -70,7 +70,7 @@ class dbClient(baseClient):
         logging.info("client: sending insert")
         return self.sender({"task":"insertImage","command":("frontend/upload/"+path,source,label,confidence,comment)})
 
-    def insertModelLabel(self,image_id,label=0,confidence=100,model='manual'):
+    def insertModelLabel(self,image_id,label=0,confidence=1,model='manual'):
         logging.info("client: sending label")
         return self.sender({"task":"insertModelLabel","command":(model,image_id,label,confidence)})
 
@@ -80,7 +80,9 @@ class dbClient(baseClient):
 
     def predict(self,filePath):
         logging.info("client: sending prediction request")
-        return self.sender({"task":"predict","command":"frontend/upload/"+filePath})
+        out=self.sender({"task":"predict","command":"frontend/upload/"+filePath})
+        out.sort(key= lambda i:i[0])
+        return out
     
     def predict_and_insert(self,filePath,source='other',label=0,confidence=5,comment='NULL'):
         logging.info("client: sending predict_and_insert request")

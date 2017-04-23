@@ -38,10 +38,12 @@ class dbServer(baseServer):
         """
         top2=self._predictor.predict(filePath)[:2]
         logging.info(str(top2))
-        hashid=self._database.insertImage(filePath,source,label,confidence,comment).split(' ')[0]
-        logging.info(hashid)
-        self._database.insertModelLabel("testing",hashid,databaseAPI.labels.index(top2[0][1].lower()),top2[0][0])
-        self._database.insertModelLabel("testing",hashid,databaseAPI.labels.index(top2[1][1].lower()),top2[1][0])
+        hashid=self._database.insertImage(filePath,source,label,confidence,comment)
+        if hashid:
+            hashid=hashid.split(' ')[0]
+            logging.info(hashid)
+            self._database.insertModelLabel("testing",hashid,databaseAPI.labels.index(top2[0][1].lower()),top2[0][0])
+            self._database.insertModelLabel("testing",hashid,databaseAPI.labels.index(top2[1][1].lower()),top2[1][0])
         return True
         
     def __init__(self,portNum=None):
@@ -96,7 +98,7 @@ class dbServer(baseServer):
                 result = connection.getRandomImageWithWeakLabel()
 
             elif task =="predict":
-                result = self._predictor.predict(command)[0][1]
+                result = self._predictor.predict(command)
 
             elif task =="predict_and_insert":
                 result = self.predictAndInsert(*command)
