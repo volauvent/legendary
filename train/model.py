@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from keras import applications
 from keras.layers import Dense, Activation, Dropout, Flatten
 from keras.models import Sequential, load_model, Model
-from keras.optimizers import SGD
+from keras.optimizers import SGD, Adam
 from keras.utils.np_utils import to_categorical
 from sklearn.metrics import confusion_matrix
 
@@ -31,7 +31,7 @@ class base_model(object):
                         class_weight=class_weight)
 
     def train_on_batch(self, X, y):
-        print(X.shape, y.shape)
+        # print(X.shape, y.shape)
         self._model.train_on_batch(X, y)
 
     def predict(self, X):
@@ -84,16 +84,25 @@ class pretrained_ft(base_model):
     A model that combines a pre-trained ImageNet model with
     simple fully connected layers. Pre-trained layers will be fine-tuned.
     """
-    def __init__(self, opt="adam"):
+    def __init__(self):
+        opt = SGD(lr=1e-05, decay=1e-6, momentum=0.5, nesterov=True)
         super(pretrained_ft, self).__init__(opt)
-        self._model = applications.ResNet50(weights='imagenet', include_top=True)
-        self._model.layers.pop()
-        x = self._model.layers[-1].output
-        x = Dense(256, activation='relu', name='fc1')(x)
-        x = Dense(8, activation='softmax', name='predictions')(x)
-        self._model = Model(input=self._model.input, output=x)
+        model1 = applications.ResNet50(weights='imagenet', include_top=True)
+        model1.layers.pop()
+        model2 = load_model('train/local/model.h5')
+        inputs = model1.get_input_at(0)
+        hidden = model1.layers[-2].output
+        flat_hidden = Flatten()(hidden)
+        outputs = model2(flat_hidden)
+        self._model = Model(inputs, outputs)
+        # x = self._model.layers[-1].output
+        # x = Dense(256, activation='relu', name='fc1')(x)
+        # x = Dense(8, activation='softmax', name='predictions')(x)
+        # self._model = Model(input=self._model.input, output=x)
         self._model.compile(optimizer=self._opt, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
         self._model.summary()
+
+        # self._model = load_model('train/local/model.h5')
 
 
 class small_CNN(base_model):

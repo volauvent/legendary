@@ -32,9 +32,11 @@ elif job == "ontrain_big":
     model = pretrained_ft()
     model.summary()
     data_src = preprocess()
-    for X, y in data_src.online_read(128):
+
+    for X, y, valX, valy in data_src.online_read(train_batch_size=16, train_prop=0.7, val_batch_size=128):
         model.train_on_batch(X, y)
-        print(model._model.test_on_batch(X, y))
+        if valX != None:
+            print(model._model.test_on_batch(valX, valy))
 
 
 elif job == "offtrain":
