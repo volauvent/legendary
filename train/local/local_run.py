@@ -30,14 +30,17 @@ elif job == "ontrain_big":
     Example for online training
     """
     model = pretrained_ft()
-    # model.summary()
     data_src = preprocess()
 
-    for X, y, valX, valy in data_src.online_read(train_batch_size=16, train_prop=0.7, val_batch_size=256, nb_epoch=1):
-        model.train_on_batch(X, y)
-        print('.')
+    for X, y, valX, valy in data_src.online_read(train_batch_size=64, train_prop=0.7, val_batch_size=128, nb_epoch=1):
         if valX.shape[0] > 0:
-            print(model._model.test_on_batch(valX, valy))
+            print("train:", model._model.test_on_batch(X, y)[1])
+            print("test:", model._model.test_on_batch(valX, valy)[1])
+        model.train_on_batch(X, y)
+    # for X, y, valX, valy in data_src.online_read(train_batch_size=64, train_prop=0.1, val_batch_size=128, nb_epoch=1):
+    #     if valX.shape[0] > 0:
+    #         print(model._model.test_on_batch(valX, valy))
+    #     print('.')
     model.save("train/local/model_big.h5")
 
 

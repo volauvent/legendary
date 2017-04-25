@@ -50,9 +50,19 @@ class preprocess():
         epoch = 0
         train_num = int(len(img_paths)*train_prop)
         train_img_paths = img_paths[:train_num]
-        val_img_paths = img_paths[train_num:]
+        # val_img_paths = img_paths[train_num:]
+        val_datapath = "train/local/legendary/images/"
+        val_labelNames = os.listdir(val_datapath)
+        val_img_paths = []
+        for lab, labname in enumerate(val_labelNames):
+            imagefiles = os.listdir(val_datapath + labname)
+            for imagefile in imagefiles:
+                val_img_paths.append((val_datapath + labname + '/' + imagefile, lab))
+
+
         if val_batch_size == -1:
             val_batch_size = len(val_img_paths)
+        # val_batch_size = int(val_batch_size/4)
         while epoch < nb_epoch:
             epoch += 1
             np.random.shuffle(train_img_paths)
@@ -68,10 +78,13 @@ class preprocess():
                     if round_num >= 5:
                         np.random.shuffle(val_img_paths)
                         for val_img_path, val_lab in val_img_paths[:val_batch_size]:
+                            # print(val_img_path)
                             img = image.load_img(val_img_path, target_size=(224, 224))
                             x = image.img_to_array(img)
+                            # x = self.augmentation(x)
                             x = preprocess_input(np.array([x]))
                             valX.append(x)
+                            # valy += [val_lab] * x.shape[0]
                             valy += [val_lab]
                         yield np.vstack(X), np.array(y), np.vstack(valX), np.vstack(valy)
                         round_num = 0
