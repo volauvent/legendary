@@ -1,93 +1,470 @@
-{% extends "base.html" %}
-{% block content%}
-  	<div class="container">
-      <div class="row">
+<!DOCTYPE html>
+<!--[if IE 8]> <html lang="en" class="ie8"> <![endif]-->  
+<!--[if IE 9]> <html lang="en" class="ie9"> <![endif]-->  
+<!--[if !IE]><!--> <html lang="en"> <!--<![endif]-->  
+<head>
+    <title>SEDMA</title>
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">    
+    <link rel="shortcut icon" href="static/images/favicon.png">
+    <link href='http://fonts.googleapis.com/css?family=Lato:300,400,300italic,400italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'> 
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="/static/plugins/bootstrap/css/bootstrap.min.css">
+    <!-- Plugins CSS -->    
+    <link rel="stylesheet" href="/static/plugins/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="/static/plugins/prism/prism.css">
+    <!-- Theme CSS -->  
+    <link id="theme-style" rel="stylesheet" href="/static/css/styles.css">
+    <link href="/static/css/custom.css" rel="stylesheet">
+    <link href="/static/css/sweetalert.css" rel="stylesheet">
+</head> 
 
-
-        <div class="col-md-6">
-          <p><b>
-          * SEDMA: Emotional Data Management and Analysis</b>
-          <!-- - SEDMA contains a whole workflow for affective level image data classification, labeling and storing. -->
-          </p>
+<body data-spy="scroll">
+    
+    <!-- ******HEADER****** --> 
+    <header id="header" class="header">  
+        <div class="container">            
+            <h1 class="logo pull-left">
+                <a class="scrollto" href="#promo">
+                    <span class="logo-title">SEDMA</span>
+                </a>
+            </h1><!--//logo-->              
+            <nav id="main-nav" class="main-nav navbar-right" role="navigation">
+                <div class="navbar-header">
+                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button><!--//nav-toggle-->
+                </div><!--//navbar-header-->            
+                <div class="navbar-collapse collapse" id="navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li class="active nav-item sr-only"><a class="scrollto" href="#promo">Home</a></li>
+                        <li class="nav-item"><a class="scrollto" href="#about">About</a></li>
+                        <li class="nav-item"><a class="scrollto" href="#features">Features</a></li>
+                        <li class="nav-item"><a class="scrollto" href="#docs">Docs</a></li>
+                        <li class="nav-item"><a class="scrollto" href="#license">License</a></li>                        
+                        <li class="nav-item"><a class="scrollto" href="#contact">Contact</a></li>
+                        <li class="nav-item" id="to-predict-page"><a class="ajax-link" href="predict">Predict</a></li>
+                        <li class="nav-item last" id="to-label-page"><a class="ajax-link" href="labelling">Label</a></li>
+                    </ul><!--//nav-->
+                </div><!--//navabr-collapse-->
+            </nav><!--//main-nav-->
         </div>
-
-
-        <div class="col-md-6">
-          <p>
-          <!-- - Image emotional content classification.<br> -->
-          * 8 motion categories: amusement, awe, contentment, excitement, anger, disgust, fear and sadness.
-          </p>
-        </div>
-<!-- 
-        <div class="col-md-12">
-          <form action="imgClassify" method="post" enctype="multipart/form-data">
-          <label class="btn btn-primary btn-file">
-          <input type="file" name="heheda" style="display: none;">
-          </label>
-          <input type="submit" />
-          </form>
-        </div>
- -->
-        <div class="col-md-12">
-          <hr>
-          <div class="col-md-10">
+    </header><!--//header-->
+    
+    <!-- ******PROMO****** -->
+    <section id="promo" class="promo section offset-header">
+        <div class="container text-center">
+            <h2 class="title"><span class="highlight">SEDMA</span> proj.</h2>
+            <p class="intro">SEDMA, a System for Emotional Data Management and Analysis, which contains a whole workflow for affective level image data classification, labeling and storing.</p>
+            <p class="intro">AC297r Capstone Project@Harvard CSE</p>
             <br>
+            <div class="btns">
+                <a class="btn btn-cta-secondary ajax-link" href="predict" id ="to-predict-page">Predict Demo</a>
+                <a class="btn btn-cta-primary ajax-link" id="to-label-page" href="labelling">Labelling Demo</a>
+            </div>
+            <ul class="meta list-inline">
+                <li><a href="" target="_blank">View on GitHub</a></li>
+                <li><a href="" target="_blank">Full Documentation</a></li>
+                <li>Created by: <a href="" target="_blank">Hengte Lin, Qin Lyu, Ming-long Wu, Bingfeng Xia</li>
+            </ul><!--//meta-->
+        </div><!--//container-->
+        <div class="social-media">
+            <div class="social-media-inner container text-center">
+                <ul class="list-inline">
+                    <!--// Generate github buttons: https://github.com/mdo/github-buttons -->
+                    <li class="github-star"><iframe src="https://ghbtns.com/github-btn.html?user=CrimsonInn&type=follow" frameborder="0" scrolling="0" width="170px" height="20px"></iframe></li>
+
+                    <li class="github-star"><iframe src="http://ghbtns.com/github-btn.html?user=CrimsonInn&repo=dab-tree&type=watch&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"></iframe></li>
+
+                    <li class="github-fork"><iframe src="http://ghbtns.com/github-btn.html?user=CrimsonInn&repo=dab-tree&type=fork" allowtransparency="true" frameborder="0" scrolling="0" width="53" height="20"></iframe></li>
+                </ul>
+            </div>
+        </div>
+    </section><!--//promo-->
+    
+    <!-- ******ABOUT****** --> 
+    <section id="about" class="about section">
+        <div class="container">
+            <h2 class="title text-center">What is <span class="highlight">SEDMA?</span></h2>
+            <p class="intro text-center">SEMDA is a system that can classify emotion of images shared on social media. This system can also be used as a foundational platform for other researchers to do further study in the affective level image classification.</p>
+            <div class="row">
+                <div class="item col-md-4 col-sm-6 col-xs-12">
+                    <div class="icon-holder">
+                        <i class="fa fa-video-camera"></i>
+                    </div>
+                    <div class="content">
+                        <h3 class="sub-title">Legendary Applied Analytics</h3>
+                        <p><a href="">Legendary Applied Analytics</a> is a pioneer in its industry that analyzes business related data sets with quantitative models.</p>
+                    </div><!--//content-->
+                </div><!--//item-->
+                <div class="item col-md-4 col-sm-6 col-xs-12">
+                    <div class="icon-holder">
+                        <i class="fa fa-smile-o"></i>
+                    </div>
+                    <div class="content">
+                        <h3 class="sub-title">Affective level image analysis</h3>
+                        <p>Rapidly growing digital data also create a need for effective ways of interpreting information from these images.</p>
+                    </div><!--//content-->
+                </div><!--//item-->
+                <div class="item col-md-4 col-sm-6 col-xs-12">
+                    <div class="icon-holder">
+                        <i class="fa fa-crosshairs"></i>
+                    </div>
+                    <div class="content">
+                        <h3 class="sub-title">Labelled image dataset</h3>
+                        <p>Manually labeled for eight emotion categories: Amusement, Contentment, Awe, Excitement, Anger, Disgust, Fear, Sadness.</p>
+                    </div><!--//content-->
+                </div><!--//item-->           
+                <div class="clearfix visible-md"></div>    
+                <div class="item col-md-4 col-sm-6 col-xs-12">
+                    <div class="icon-holder">
+                        <i class="fa fa-code"></i>
+                    </div>
+                    <div class="content">
+                        <h3 class="sub-title">Machine learning model</h3>
+                        <p>Training on local machines. Three model types are included: Using pre-trained <a href="">ResNet</a> and fine-tune the last three fully-connected layers. Users can load the model weights and predict the probabilities of any given images.</p>
+                    </div><!--//content-->
+                </div><!--//item-->                
+                <div class="item col-md-4 col-sm-6 col-xs-12">
+                    <div class="icon-holder">
+                        <i class="fa fa-code"></i>
+                    </div>
+                    <div class="content">
+                        <h3 class="sub-title">Multi-threading Database</h3>
+                        <p>The database module stores large files like images on file system, while keeping metadata in a Sqlite database. The database hash (using phash) all incoming images and use hash codes as image ids. A parallel strategy is provided to import large number of images.</p>
+                    </div><!--//content-->
+                </div><!--//item-->
+                <div class="item col-md-4 col-sm-6 col-xs-12">
+                    <div class="icon-holder">
+                        <i class="fa fa-code"></i>
+                    </div>
+                    <div class="content">
+                        <h3 class="sub-title">Friendly front end</h3>
+                        <p>We use Python Flask as our web server, Bootstrap as our web page framework, and AJAX as our data passing method. Users could upload images and get their predict emotion. Users also could help us label images requested from image database randomly.</p>
+                    </div><!--//content-->
+                </div><!--//item-->               
+            </div><!--//row-->            
+        </div><!--//container-->
+    </section><!--//about-->
+    
+    <!-- ******FEATURES****** --> 
+    <section id="features" class="features section">
+        <div class="container text-center">
+            <h2 class="title">SEDMA System Architecture</h2>
+            <ul class="feature-list list-unstyled">
+                <li><i class="fa fa-check"></i> Machine learning models</li>
+                <li><i class="fa fa-check"></i> Multi-threading database</li>
+                <li><i class="fa fa-check"></i> Interactive webpages</a></li>
+            </ul>
+            <br>
+            <br>
+            <div class="col-md-12">
+                <div class="col-md-6">
+                    <img src="static/images/sys1.jpg"  height="350" />
+                </div>
+                <div class="col-md-6">
+                    <img src="static/images/sys2.jpg"  height="350" />
+                </div>
+            </div>
+        </div><!--//container-->
+    </section><!--//features-->
+    
+    <!-- ******DOCS****** --> 
+    <section id="docs" class="docs section">
+        <div class="container">
+            <div class="docs-inner">
+            <h2 class="title text-center">Get Started!</h2>            
+            <div class="block">
+                <h3 class="sub-title text-center">Wooo!</h3>
+                <p>Below are the instructions about how to start SEDMA system.</p>
+                <ul class="list-unstyled">
+                    <li><strong> - Environment:</strong> Python3, Tensorflow, Keras</li>
+                    <li><strong> - Languages:</strong> Python, JavaScript, CSS and HTML</li>
+                </ul>
+                <div class="code-block">
+                    <pre><code class="language-css">
+    /*   
+     * 'legendary' file root directory
+     */
+    $./start_server.sh
+    $./start_frontend.sh
+                     </code></pre>
+                </div><!--//code-block-->
+            </div><!--//block-->
             
-            <!-- <form action="index" method="post" enctype="multipart/form-data"> -->
-            <!--<form role="form" id="uploadForm" method="POST" enctype="multipart/form-data">-->
-              <label class="btn btn-primary btn-file">
-                choose Image
-                <input type="file" name="upload-img" id="upload-img" style="display: none;">
-              </label>
-              <button type="submit" id="submit-img" class="btn btn-primary">upload</button>
-            <!--</form>-->
+            <div class="block">
+                <h3 class="sub-title text-center">Full Documentation</h3>
+                <p>Full documentation of SEDMA System can be found in the following github link.</p>
+                <hr>
+                <p class="text-center">
+                    <a class="btn btn-cta-primary" href="" target="_blank">More on GitHub</a>
+                </p>
+            </div><!--//block-->
             
-            <br>
-            <p id="file-name"></p>
-          </div>
-
-
-<!--           <div class="col-md-8">
-            <br>
-            <form action="imgClassify" method="post" enctype="multipart/form-data">
-              <button type="submit" id="submit-img" class="btn btn-primary">Submit</button>
-            </form>
-          </div> -->
-
-
-          <div class="col-md-2">
-            <br>
-            <!-- <a href="/labelling"><button type="button" id="to-label-page" class="btn btn-success">Go to Label Page</button></a> -->
-            <button type="button" id="to-label-page" class="btn btn-success">Go to Label Page</button>
-          </div>
-        </div>
-
-
-        <div class="col-md-12">
-          <br>
-          <div class="col-md-6">
-            <p>Upload image: </p>
-            <img id="plot-img" width = "100%"/>
-            <!-- <input type="file" onchange="selectImage(this);"/> -->
-            <!-- <img id="plot-img"></img> -->
-          </div>
-
-
-          <div class="col-md-6"> 
-            <p>Predict emotion: </p>
-            <p id="predict-emotion" style="color:red;font-weight:bold;font-size:30px"></p>
-          </div>
-
-        </div>
-
-        <div class="col-md-12">
-          <hr>
-        </div>
-
+            </div><!--//docs-inner-->         
+        </div><!--//container-->
+    </section><!--//features-->
+    
+    <!-- ******LICENSE****** --> 
+    <section id="license" class="license section">
+        <div class="container">
+            <div class="license-inner">
+            <h2 class="title text-center">License</h2>
+                <div class="info">
+                    <p>This system is developed by Hengte Lin, Qin Lyu, Ming-long Wu, Bingfeng Xia for Harvard APCOMP 297R: Computational Science and Engineering Capstone Projects. Cooperated with Legendary Applied Analytics Division as well.</p>
         
-      </div>
+                </div><!--//info-->
+                <div class="cta-container">
+                    <div class="speech-bubble">                    
+                        <p class="intro">If you are interested in SEDMA system, please contact with us. :)</p>
+                        <div class="icon-holder  text-center"><i class="fa fa-smile-o"></i></div>
+                    </div><!--//speech-bubble-->
+                    <div class="btn-container  text-center">
+                        
+                    </div><!--//btn-container-->
+                </div><!--//cta-container-->
+            </div><!--//license-inner-->
+        </div><!--//container-->
+    </section><!--//how-->
+    
+    <!-- ******CONTACT****** --> 
+    <section id="contact" class="contact section has-pattern">
+        <div class="container">
+            <div class="contact-inner">
+                <h2 class="title  text-center">Contact</h2>
+                <p class="intro  text-center">We hope you find SEDMA system useful and interesting! <br />Feel free to get in touch with us if you have any questions or suggestions.</p>
+                <div class="author-message">                      
+                    <div class="profile">
+                        <img class="img-responsive" src="static/images/profile.png" width="100" />
+                    </div><!--//profile-->
+                    <div class="speech-bubble">
+                        <h3 class="sub-title">Want to learn more about SEDMA?</h3>
+                        <p><strong>Client:</strong> Legendary Applied Analytics</p>
+                        <p><strong>Instructor:</strong> Pavlos Protopapas</p>
+                        <p><strong>Teaching fellow:</strong> Niv Dayan</p>
+                        <div class="source">
+                            <span class="name"><a href="" target="_blank">Crimson Inn Team</a></span>
+                            <br />
+                            <span class="title">Hengte Lin, Qin Lyu, Ming-long Wu, Bingfeng Xia</span>
+                        </div><!--//source-->
+                    </div><!--//speech-bubble-->                        
+                </div><!--//author-message-->
+                <div class="clearfix"></div>
+                <div class="info text-center">
+                    <h4 class="sub-title">Get Connected</h4>
+                    <ul class="social-icons list-inline">
+                        <li><a href="" target="_blank"><i class="fa fa-twitter"></i></a></li>
+                        <li><a href="" target="_blank"><i class="fa fa-facebook"></i></a></li>
+                        <li><a href=""><i class="fa fa-linkedin"></i></a></li>
+                        <li class="last"><a href="mailto:hello@gmail.com"><i class="fa fa-envelope"></i></a></li>              
+                    </ul>
+                </div><!--//info-->
+            </div><!--//contact-inner-->
+        </div><!--//container-->
+    </section><!--//contact-->  
+    
 
-  	</div>
-  	
-{% endblock %}
+    <!-- ******FOOTER****** --> 
+    <footer class="footer">
+        <div class="container text-center">
+            <i class="fa fa-copyright" aria-hidden="true"></i><small class="copyright">  All right reserved. 2017.</small>
+        </div><!--//container-->
+    </footer><!--//footer-->
+     
+    <!-- Javascript -->          
+    <script type="text/javascript" src="/static/plugins/jquery-1.11.3.min.js"></script>   
+    <script type="text/javascript" src="/static/plugins/jquery.easing.1.3.js"></script>   
+    <script type="text/javascript" src="/static/plugins/bootstrap/js/bootstrap.min.js"></script>     
+    <script type="text/javascript" src="/static/plugins/jquery-scrollTo/jquery.scrollTo.min.js"></script> 
+    <script type="text/javascript" src="/static/plugins/prism/prism.js"></script>    
+    <script type="text/javascript" src="/static/js/main.js"></script>
+    <script src="/static/js/flot.js"></script>
+    <script src="/static/js/sweetalert.min.js"></script>
+
+
+    <script>
+      var NEW_IMG_LABEL = "EMPTY";
+      $(document).ready(function(){
+        // Choose image button
+        $("#upload-img").click(function(event){
+          // console.log("Browse!");
+        });
+
+
+        $("#upload-img").change(function(event){
+          if($("#upload-img")[0].files['length'] !== 0){
+            $("#file-name").html($("#upload-img")[0].files[0]['name']);
+          }
+        });
+
+
+        // Submit image button
+        $("#submit-img").click(function(event){
+          var file = $("#upload-img")[0];
+          if(file.files['length'] == 0){
+            sweetAlert("Error", "Please choose an image!", "error");
+            return;
+          }
+          
+          file = file.files[0];
+          if(!/image\/\w+/.test(file.type)){
+            sweetAlert("Error", "File is not image!", "error");
+          }
+
+          var reader = new FileReader();
+          reader.readAsDataURL(file);
+
+          reader.onload = function(evt){
+            // console.log("image upload!")
+            $("#predict-emotion").html("please wait...");
+            document.getElementById('plot-img').src = evt.target.result;
+            var imageData = evt.target.result;
+            var fd = new FormData();
+            fd.append("image-up", file)
+            $.ajax({
+              url: '/imgClassify',
+              type: 'POST',
+              cache: false,
+              data: fd,
+              processData: false,
+              contentType: false,
+              success: function(response){
+                console.log("Submit!",response);
+                if (response['message']=='success') {
+                  // update prediction result
+                  $("#predict-emotion").html(response['predictResult']);
+                  swal("Success", "upload to database and get prediction!", "success"); 
+                } else {
+                  sweetAlert("Error", response['message'], "error");
+                }
+              },
+            });
+          }
+        });
+
+
+        $("#request-new-image").click(function(event){
+          $.ajax({
+            url: "{{ url_for('imageLable') }}", 
+            type: 'GET',
+            cache: false,
+            data: {},
+            success: function(response){
+              //console.log("GET!",response);
+              //document.getElementById('label-img').src="../upload/Spring_night.jpg";
+              $("#label-img").attr("src", response['img']);
+              // console.log(response['img'])
+              var weekLable = response['label'];
+              NEW_IMG_LABEL = response['id'];
+              console.log("image id: ")
+              console.log(weekLable)
+
+              document.getElementById("amusement").disabled = true;
+              document.getElementById("awe").disabled = true;
+              document.getElementById("contentment").disabled = true;
+              document.getElementById("excitement").disabled = true;
+              document.getElementById("anger").disabled = true;
+              document.getElementById("disgust").disabled = true;
+              document.getElementById("fear").disabled = true;
+              document.getElementById("sadness").disabled = true;
+              document.getElementById("amusement-p").style.color="lightgrey";
+              document.getElementById("awe-p").style.color="lightgrey";
+              document.getElementById("contentment-p").style.color="lightgrey";
+              document.getElementById("excitement-p").style.color="lightgrey";
+              document.getElementById("anger-p").style.color="lightgrey";
+              document.getElementById("disgust-p").style.color="lightgrey";
+              document.getElementById("fear-p").style.color="lightgrey";
+              document.getElementById("sadness-p").style.color="lightgrey";
+
+              for(var i = 0; i < weekLable.length; i++){
+                document.getElementById(weekLable[i]).disabled = false;
+                document.getElementById(weekLable[i]+"-p").style.color="black";
+              }
+
+            },
+            error: function(error){
+              //console.log("Error GET!",error);
+              sweetAlert("Error", "request new image error", "error");
+            }
+          });
+
+        });
+
+
+        $("#to-predict-page").click(function(event){
+
+          $.ajax({
+            success: function(){
+              window.location.href = '/predict';
+            },
+            error: function(error){
+              sweetAlert("Error", "page not exist!", "error");
+            }
+          });
+        });
+
+
+        $("#to-label-page").click(function(event){
+
+          $.ajax({
+            callback: $("#request-new-image").click(),
+            success: function(){
+              window.location.href = '/labelling';
+            },
+            error: function(error){
+              sweetAlert("Error", "page not exist!", "error");
+            }
+          });
+        });
+
+
+        $('#submit-label').click(function(event){
+          var newLable = [];
+          $("input[type=radio]:checked").each(function(){    
+            newLable.push(this.value);
+          });
+          $.ajax({
+            url: "/imageLable",
+            type: 'POST',
+            data: {
+                    'label': newLable,
+                    'imgId': NEW_IMG_LABEL,
+                  },
+            success: function(response){
+              if (response['message']=='success') {
+                swal("Success", "Submit new label!", "success");
+                // automatically request another image
+                console.log("in submit lable: ")
+                console.log(NEW_IMG_LABEL);
+                NEW_IMG_LABEL = "EMPTY";
+                console.log(NEW_IMG_LABEL);
+                $("#request-new-image").click();
+              } else if(response['message']=='empty') {
+                sweetAlert("Error", "Please choose at least one emotion!", "error");
+              } else if(response['message']=='noImg') {
+                sweetAlert("Error", "Please request a new image first!", "error");
+              }
+            },
+            error: function(error){
+              sweetAlert("Error", "Network Error. Send Label Error", "error");
+            }
+          });
+
+        });
+
+
+      });
+    </script>
+
+
+</body>
+</html> 
 

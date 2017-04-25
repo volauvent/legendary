@@ -36,6 +36,13 @@ def index():
 
 
 @app.route('/')
+@app.route('/predict')
+def predict():
+    # if request.method == 'GET':
+    return render_template('predict.html', title='predict')
+
+
+@app.route('/')
 @app.route('/labelling')
 def labelling():
     # if request.method == 'GET':
@@ -73,10 +80,18 @@ def imgClassify():
 
             #moveImge(filename, WEB_UPLOAD_PATH, DATABASE_INSERT_PATH)
 
-            client.insertImage(filename)
+            # client.insertImage(filename)
 
-            emotionCategory = client.predict(filename)
 
+
+            emotionCategory = client.predict_and_insert(filename)
+            # emotionCategory.sort(key=lambda x: -x[0])
+            predictEmotion = []
+            for emotion in emotionCategory:
+                predictEmotion.append("{:.1f}".format(emotion[0]*100))
+                predictEmotion.append(emotion[1])
+            # print(predictEmotion)
+            
             ################
             # add prediction logic
             ################
@@ -86,7 +101,7 @@ def imgClassify():
             # image store folder path: UPLOAD_FOLDER in __init__.py
             # predict result: emotionCategory(string)
 
-            return jsonify(message='success', predictResult=emotionCategory)
+            return jsonify(message='success', predictResult=predictEmotion)
         else:
             print("File format error!")
             return jsonify(message='File format error!')
@@ -99,8 +114,6 @@ def imgClassify():
 
 @app.route('/imageLable', methods=['POST', 'GET'])
 def imageLable():
-
-
 
     if request.method == 'POST':
         # add a new label of given picture into the database
@@ -153,7 +166,9 @@ def imageLable():
 
         imgPath = imgData['path']
         imgName = imgPath.split('/')[-1]
-        print(imgName)
+        
+        if not os.path.isdir(WEB_IMAGE_PATH):
+            os.makedirs(WEB_IMAGE_PATH)
 
         moveImge(imgName, DATABASE_IMAGE_PATH, WEB_IMAGE_PATH)
         reqImage = app.config['REQUEST_FOLDER'] + "/" + imgName
@@ -164,7 +179,7 @@ def imageLable():
         weekLabel = []
         for i in range(len(weekLabelNum)):
             weekLabel.append(EMOTIONS[weekLabelNum[i] - 1])
-        print(weekLabel)
+        # print(weekLabel)
         # print(imgPath)
         return jsonify(img=reqImage, label=weekLabel, id=imgID)
 
