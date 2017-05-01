@@ -111,6 +111,41 @@ elif job == "legendary":
 
     model.conf_mat(valX, valy, label_names, savefile="train/legendary_confusion.png")
 
+elif job == "mixtrain":
+    """
+    Example for mixed training
+    """
+    # model = pretrained_fixed()
+    # with open("train/local/data.pkl", 'rb') as f:
+    #     dat = pickle.load(f, encoding='latin1')
+    # X, y, class_names = dat
+
+    processor = preprocess("resnet")
+    lX, ly, class_names = processor.offline_read(datapath="train/local/legendary/images/", savefile=None)
+    model = base_model()
+    model.load('train/local/model.h5')
+
+    train_prop = 0.5
+    sample_num = lX.shape[0]
+    train_num = int(sample_num*train_prop)
+    # trainX = np.vstack((X, lX[:train_num, :]))
+    trainX = lX[:train_num, :]
+    # trainy = np.concatenate((y, ly[:train_num]))
+    trainy = ly[:train_num]
+    valX = lX[train_num:, :]
+    valy = ly[train_num:]
+    # weight = [np.sum(trainy == i) for i in range(len(class_names))]
+    # weight = {i: np.min(weight)*1.0/weight[i] for i in range(len(class_names))}
+    weight = {}
+    model.fit(len(class_names), trainX, trainy, valX, valy,  np_epoch=8, class_weight=weight)
+    # model.save("train/local/model.h5")
+    # model.conf_mat(valX, valy, class_names)
+
+    predicted_score = model.predict(valX)
+    print("Overall classificaiton rate: {}".format(topk_acc(predicted_score, valy, 1)))
+    print("Top 2 classificaiton rate: {}".format(topk_acc(predicted_score, valy, 2)))
+    print("Top 3 classificaiton rate: {}".format(topk_acc(predicted_score, valy, 3)))
+
 elif job == "random":
     train_prop = 0.7
     with open("train/local/data.pkl", 'rb') as f:
