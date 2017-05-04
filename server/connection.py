@@ -124,32 +124,32 @@ class myConnection():
 
     def insertImage(self, path, source='other', label=0, confidence=5, comment="NULL", hashid=None):
         with self.lock:
-            self.__insertImage(path, source, label, confidence, comment, hashid)
+            return self.__insertImage(path, source, label, confidence, comment, hashid)
 
     def insertMultipleImages(self, folderPath, source='other', label=0, confidence=5, comment='NULL'):
         with self.lock:
-            self.__insertMultipleImages(folderPath, source, label, confidence, comment)
+            return self.__insertMultipleImages(folderPath, source, label, confidence, comment)
 
     def removeImage(self, image_id):
         with self.lock:
-            self.__removeImage(image_id)
+            return self.__removeImage(image_id)
 
     def insertModel(self, path, name='', accuracy=0):
         with self.lock:
-            self.__insertModel(path, name, accuracy)
+            return self.__insertModel(path, name, accuracy)
 
     def removeModel(self, name):
         with self.lock:
-            self.__removeModel(name)
+            return self.__removeModel(name)
 
     def synchronize(self):
         with self.lock:
-            self.__synchronize()
+            return self.__synchronize()
 
     def insertMultipleImagesParallel(self, folderPath, hashThreadNum=2, source='other', label=0, confidence=5,
                                      comment='NULL'):
         with self.lock:
-            self.__insertMultipleImagesParallel(folderPath, hashThreadNum, source, label, confidence, comment)
+            return self.__insertMultipleImagesParallel(folderPath, hashThreadNum, source, label, confidence, comment)
 
     #------------------------------------------
     #those are methods that modify file system.
@@ -178,7 +178,7 @@ class myConnection():
             tempFile.copyBack()
             tempFile.remove()
             logging.warning("%s duplicated entry, insert reverted" % (hashid))
-            return "%s duplicated entry, insert reverted" % (hashid)
+            return None
 
         except:
             # with exception, roll back

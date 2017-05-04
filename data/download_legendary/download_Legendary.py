@@ -1,6 +1,7 @@
 import os
 import re
 import csv
+import sys
 import urllib.request
 import time
 from multiprocessing import Pool
@@ -32,6 +33,11 @@ def download_from_csv(file_name):
                         download_count+=1
                 except:
                             print(name+" can not be downloaded")
+                            if row[1].lower() =="none":
+                                print("we ignore none image")
+                            else:
+                                e = sys.exc_info()
+                                print(e)
                             failed_count+=1
         print("file %s, downloaded %d, failed %d"%(file_name,download_count,failed_count))
         return (download_count,failed_count)
@@ -44,7 +50,12 @@ if __name__ =="__main__":
             os.makedirs('./images/'+folder)
 
     #find all csv and call download method
-    download_from_csv("Legendary_Image_Emotion_Validation_Set1.csv")
+    files=(os.listdir("./"))
+    r = re.compile(r""".*csv""")
+    csv_files=(list(filter(r.match, files)))
+    for c in csv_files:
+        print("processing %s" % c)
+        download_from_csv(c)
 
     #for file in csv_files:
     #    download_from_csv(file)

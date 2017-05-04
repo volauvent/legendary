@@ -14,7 +14,6 @@ class predictor:
         init tensorflow instance
         '''
         self.lock=threading.RLock()
-
         self._processor = preprocess(preprocessor)
         logging.info("processor loaded")
         self._model = base_model()
