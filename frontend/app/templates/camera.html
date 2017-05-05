@@ -136,6 +136,7 @@
         // Put video listeners into place
         if(navigator.webkitGetUserMedia) { // WebKit-prefixed
           navigator.webkitGetUserMedia(videoObj, function(stream){
+          //navigator.mediaDevices.webkitGetUserMedia(videoObj, function(stream){
             video.src = window.webkitURL.createObjectURL(stream);
             video.play();
           }, errBack);
@@ -146,6 +147,7 @@
           }, errBack);
         } else if(navigator.mozGetUserMedia) { // Firefox-prefixed
           navigator.mozGetUserMedia(videoObj, function(stream){
+          //navigator.mediaDevices.getUserMedia(videoObj, function(stream){
             video.src = window.URL.createObjectURL(stream);
             video.play();
           }, errBack);
