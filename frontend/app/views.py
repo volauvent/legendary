@@ -1,7 +1,7 @@
 from flask import jsonify, render_template, session, url_for, request, g, abort
 from app import app#, db
 import json
-import os
+import os, base64
 import shutil
 import socket
 import pickle
@@ -21,6 +21,8 @@ WEB_IMAGE_PATH = os.path.abspath('.') + "/frontend/app/static/reqImg/"
 
 WEB_UPLOAD_PATH = os.path.abspath('.') + "/frontend/upload/"
 DATABASE_INSERT_PATH = os.path.abspath('.') + "/server/"
+
+CAMERA_UPLOAD_PATH = os.path.abspath('.') + "/"
 
 def moveImge(imgName, originPath, desPath):
     # print(originPath + imgName)
@@ -48,6 +50,12 @@ def labelling():
     # if request.method == 'GET':
     return render_template('labelling.html', title='Labelling')
 
+@app.route('/')
+@app.route('/camera')
+def camera():
+    # if request.method == 'GET':
+    return render_template('camera.html', title='camera')
+
 
 def allowedFile(filename):
     return '.' in filename and filename.rsplit('.',1)[1] in ALLOWED_EXTENSIONS
@@ -59,6 +67,7 @@ def imgClassify():
         # take the upload picture as an input
         # carry out emotion classification
         # return emotion category
+        
         if 'image-up' not in request.files:  # no image
             print("no image!")
             return jsonify(message='Network problem, no image...')
@@ -66,6 +75,7 @@ def imgClassify():
         # TODO:
         # too complicated, need to be simplified
         fileMeta = request.files["image-up"]
+        # print(fileMeta)
         filename = fileMeta.filename
         if fileMeta and allowedFile(filename):
             filename = secure_filename(filename)
@@ -81,8 +91,6 @@ def imgClassify():
             #moveImge(filename, WEB_UPLOAD_PATH, DATABASE_INSERT_PATH)
 
             # client.insertImage(filename)
-
-
 
             emotionCategory = client.predict_and_insert(filename)
             # emotionCategory.sort(key=lambda x: -x[0])
@@ -111,6 +119,35 @@ def imgClassify():
         return
 
 # IMGID = ""
+
+@app.route('/capCamera', methods=['POST', 'GET'])
+def capCamera():
+    if request.method == 'POST':
+        # take the upload picture as an input
+        # carry out emotion classification
+        # return emotion category
+
+        targetImgID = request.form.get("imgimg")
+        # print(targetImgID)
+        targetImgID = str(targetImgID)
+        imgData = base64.b64decode(targetImgID)
+        leniyimg = open('imgout.png','wb')
+        leniyimg.write(imgData)
+        leniyimg.close()
+        moveImge('imgout.png', CAMERA_UPLOAD_PATH, app.config['UPLOAD_FOLDER'])
+
+        emotionCategory = client.predict_and_insert('imgout.png')
+        # emotionCategory.sort(key=lambda x: -x[0])
+        predictEmotion = []
+        for emotion in emotionCategory:
+            predictEmotion.append("{:.1f}".format(emotion[0]*100))
+            predictEmotion.append(emotion[1])
+        return jsonify(message='success', predictResult=predictEmotion)
+    else:
+        # take the choosen emotion category as an input
+        # return example picture of this emotion
+        return  
+
 
 @app.route('/imageLable', methods=['POST', 'GET'])
 def imageLable():

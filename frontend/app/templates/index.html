@@ -52,7 +52,8 @@
                         <li class="nav-item"><a class="scrollto" href="#license">License</a></li>                        
                         <li class="nav-item"><a class="scrollto" href="#contact">Contact</a></li>
                         <li class="nav-item" id="to-predict-page"><a class="ajax-link" href="predict">Predict</a></li>
-                        <li class="nav-item last" id="to-label-page"><a class="ajax-link" href="labelling">Label</a></li>
+                        <li class="nav-item" id="to-label-page"><a class="ajax-link" href="labelling">Label</a></li>
+                        <li class="nav-item last" id="to-camera-page"><a class="ajax-link" href="camera">Camera</a></li>
                     </ul><!--//nav-->
                 </div><!--//navabr-collapse-->
             </nav><!--//main-nav-->
@@ -418,6 +419,18 @@
             callback: $("#request-new-image").click(),
             success: function(){
               window.location.href = '/labelling';
+            },
+            error: function(error){
+              sweetAlert("Error", "page not exist!", "error");
+            }
+          });
+        });
+
+        $("#to-camera-page").click(function(event){
+
+          $.ajax({
+            success: function(){
+              window.location.href = '/camera';
             },
             error: function(error){
               sweetAlert("Error", "page not exist!", "error");
