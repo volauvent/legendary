@@ -75,8 +75,10 @@ def imgClassify():
         # TODO:
         # too complicated, need to be simplified
         fileMeta = request.files["image-up"]
-        # print(fileMeta)
+        print(fileMeta)
         filename = fileMeta.filename
+        print(filename)
+
         if fileMeta and allowedFile(filename):
             filename = secure_filename(filename)
             # fake Data test:

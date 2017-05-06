@@ -134,76 +134,6 @@
 
 
     <script>
-    // var context = canvas.getContext("2d");
-    //   window.addEventListener("DOMContentLoaded", function() {
-    //     // Grab elements, create settings, etc.
-    //     var canvas = document.getElementById("canvas");
-          
-    //     video = document.getElementById("video");
-    //     videoObj = { "video": true };
-    //     errBack = function(error) {
-    //       console.log("Video capture error: ", error.code); 
-    //     };
-
-    //     // Put video listeners into place
-    //     if(navigator.getUserMedia) { // Standard
-    //       navigator.getUserMedia(videoObj, function(stream) {
-    //         video.src = stream;
-    //         video.play();
-    //       }, errBack);
-    //     } else if(navigator.webkitGetUserMedia) { // WebKit-prefixed
-    //       navigator.webkitGetUserMedia(videoObj, function(stream){
-    //         video.src = window.webkitURL.createObjectURL(stream);
-    //         video.play();
-    //       }, errBack);
-    //     }
-    //     else if(navigator.mozGetUserMedia) { // Firefox-prefixed
-    //       navigator.mozGetUserMedia(videoObj, function(stream){
-    //         video.src = window.URL.createObjectURL(stream);
-    //         video.play();
-    //       }, errBack);
-    //     }
-    //   }, false);
-
-    //   // document.getElementById("snap")
-    //   //  .addEventListener("click", function() {
-    //   //   context.drawImage(video, 0, 0, 160, 120);
-        
-    //   //   // Canvas2Image.saveAsPNG(context);
-    //   // });
-
-      
-    //   $("#snap").click(function(event){ 
-    //     context.drawImage(video, 0, 0, 160, 120);
-        
-    //     console.log("hahahahaa");
-    //     var canvas = document.getElementById('canvas');
-    //     // Canvas2Image.saveAsPNG(canvas);
-    //     var data = canvas.toDataURL(); 
-    //     console.log(data);
-    //     //删除字符串前的提示信息 "data:image/png;base64,"  
-    //     var b64 = data.substring(22);
-    //     console.log(b64);
-    //     $.ajax({
-    //       url: '/imgClassify',
-    //       type: 'POST',
-    //       data: {"imgimg": b64},
-    //       success: function (response) {  
-    //         console.log("Submit camera!",response);
-    //         if (response['message']=='success') {
-    //           // update prediction result
-    //           console.log(response['predictResult'])
-    //           var predictLable = response['predictResult'];
-    //           $("#predict-emotion").html(predictLable[1]+"<br>"+"Prob:  "+predictLable[0]+"%"+"<br><br>"+predictLable[3]+"<br>"+"Prob:  "+predictLable[2]+"%");
-    //           swal("Success", "upload to database and get prediction!", "success"); 
-    //         } else {
-    //           sweetAlert("Error", response['message'], "error");
-    //         }
-    //       },
-    //     });
-    //   });
-
-
 
       var NEW_IMG_LABEL = "EMPTY";
       $(document).ready(function(){
@@ -238,27 +168,72 @@
             document.getElementById('plot-img').src = evt.target.result;
             var imageData = evt.target.result;
             var fd = new FormData();
-            fd.append("image-up", file)
-            $.ajax({
-              url: '/imgClassify',
-              type: 'POST',
-              cache: false,
-              data: fd,
-              processData: false,
-              contentType: false,
-              success: function(response){
-                console.log("Submit!",response);
-                if (response['message']=='success') {
-                  // update prediction result
-                  console.log(response['predictResult'])
-                  var predictLable = response['predictResult'];
-                  $("#predict-emotion").html(predictLable[1]+"<br>"+"Prob:  "+predictLable[0]+"%"+"<br><br>"+predictLable[3]+"<br>"+"Prob:  "+predictLable[2]+"%");
-                  swal("Success", "upload to database and get prediction!", "success"); 
-                } else {
-                  sweetAlert("Error", response['message'], "error");
+
+            console.log(file);
+
+            var dataURL = evt.currentTarget.result;
+            // console.log(dataURL);
+            var image = new Image();
+            image.src = evt.target.result;
+            // image = document.getElementById('plot-img');
+            // console.log(image);
+            image.onload = function () { //image的加载同样是异步
+
+              var imageWidth = image.width; // 获取图片的宽度
+              // console.log(imageWidth);
+
+              var imageHeigth = image.height; // 获取图片的高度
+              // console.log(imageHeigth);
+
+              var blob; // 用来保存文件
+              // 如果图片宽度大于500px则进行压缩，否则不用
+              if (imageWidth > 500) {
+                // 压缩操作
+                let canvas = document.createElement('canvas');
+                canvas.width = 500;
+                canvas.height = 500 / (imageWidth / imageHeigth); // 保证图片比例未变
+                let context = canvas.getContext('2d');
+                context.drawImage(image, 0, 0, imageWidth, imageHeigth, 0, 0, canvas.width, canvas.height); // 将图片绘制到Canvas
+                let compressdPictureDataURL = canvas.toDataURL(); // 获取到canvas的base64信息
+                compressdPictureDataURL = compressdPictureDataURL.split(',')[1]; // base64','前的内容只是声明，并不是真正的文件内容
+                let decodedData = window.atob(compressdPictureDataURL); // 解码base64
+                let decodedDataLength = decodedData.length;
+                let uint8Array = new Uint8Array(decodedDataLength);
+                for(let i = 0; i < decodedDataLength; i++){
+                  uint8Array[i] = decodedData.charCodeAt(i);
                 }
-              },
-            });
+                blob = new Blob([uint8Array], {
+                  type: 'image/png' // toDataURL返回的是png格式
+                });
+                var picname = Math.floor(Math.random()*10000);
+                fd.append('image-up', blob, picname.toString()+'.png'); 
+              } else {
+                blob = file; // 不需要对文件进行压缩操作
+                fd.append("image-up", blob)
+              }
+
+              
+              $.ajax({
+                url: '/imgClassify',
+                type: 'POST',
+                cache: false,
+                data: fd,
+                processData: false,
+                contentType: false,
+                success: function(response){
+                  console.log("Submit!",response);
+                  if (response['message']=='success') {
+                    // update prediction result
+                    console.log(response['predictResult'])
+                    var predictLable = response['predictResult'];
+                    $("#predict-emotion").html(predictLable[1]+"<br>"+"Prob:  "+predictLable[0]+"%"+"<br><br>"+predictLable[3]+"<br>"+"Prob:  "+predictLable[2]+"%");
+                    swal("Success", "upload to database and get prediction!", "success"); 
+                  } else {
+                    sweetAlert("Error", response['message'], "error");
+                  }
+                },
+              });
+            }
           }
         });
 
