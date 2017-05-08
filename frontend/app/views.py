@@ -94,7 +94,7 @@ def imgClassify():
 
             # client.insertImage(filename)
 
-            emotionCategory = client.predict_and_insert(filename)
+            emotionCategory = client.predict(filename)
             # emotionCategory.sort(key=lambda x: -x[0])
             predictEmotion = []
             for emotion in emotionCategory:
@@ -138,7 +138,7 @@ def capCamera():
         leniyimg.close()
         moveImge('imgout.png', CAMERA_UPLOAD_PATH, app.config['UPLOAD_FOLDER'])
 
-        emotionCategory = client.predict_and_insert('imgout.png')
+        emotionCategory = client.predict('imgout.png')
         # emotionCategory.sort(key=lambda x: -x[0])
         predictEmotion = []
         for emotion in emotionCategory:
