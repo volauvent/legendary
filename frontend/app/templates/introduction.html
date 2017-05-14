@@ -180,6 +180,7 @@
           </figure>
           <br>
 
+          <br>
           <h4 id="Database-Module">5.1 Database Module</h4>
           <p>The database module stores image files on file system, while keeping metadata in a Sqlite database. Such design is meant to avoid putting heavy loading of storing images to database. Figure 4 plots the architecture of database module in SEDMA including connection pool, file system storage, and metadata Sql database.</p>
           <figure align="center">
@@ -221,6 +222,7 @@
           <h5 id="Back-end-Server">5.1.6 Back-end Server(dbServer)</h5>
           <p>Back-end (dbServer) and front-end servers are separated and communicate with each other through TCP socket on a customizable port. Front-end server will be introduced later. The purpose of back-end server is to handle requests from clients to the database. In addition, server also maintains an instance of theano / tensorflow in the memory for online prediction. When receiving a new connection from socket, the back-end server will assign an individual thread dedicated for that connection for simultaneous multi-threading support.</p>
 
+          <br>
           <h4 id="Training-Module">5.2 Training Module</h4>
           <p>The training module supports the following functions.</p>
 
@@ -236,9 +238,11 @@
           <h5 id="Plot-and-summary">5.2.4 Plot and summary</h5>
           <p>The training module also supports plotting the network architecture of a model, calculating the classification accuracy of a model, and plotting the confusion matrix of a model.</p>
 
+          <br>
           <h4 id="Preprocess-Module">5.3 Preprocess Module</h4>
           <p>Preprocessing module transforms a raw image into a vector that can be used for training and prediction. This is done by scaling the raw image and then passing it through a pre-trained ResNet network. The output of ResNet is then a vector representation of the raw images. In training mode, preprocessing module can fetch data and process them either online or offline (see 5.2 Training Module). Preprocessing module also supports data augmentation, including translation, flipping and inverse to increase the number of labeled data.</p>
 
+          <br>
           <h4 id="Front-end-Module">5.4 Front-end Module</h4>
           <p>In the front-end module, we use Python Flask as our web server, Bootstrap as our web page framework, and AJAX as our data passing method. The following figure shows system architecture of the front-end module.</p>
           <figure align="center">
