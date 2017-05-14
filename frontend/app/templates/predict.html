@@ -46,11 +46,12 @@
                 <div class="navbar-collapse collapse" id="navbar-collapse">
                     <ul class="nav navbar-nav">
                         <li class="active nav-item sr-only" id="to-index-page"><a class="ajax-link" href="index">Home</a></li>
-                        <li class="nav-item" id="to-index-page"><a class="ajax-link" href="index">About</a></li>
-                        <li class="nav-item" id="to-index-page"><a class="ajax-link" href="index">Features</a></li>
-                        <li class="nav-item" id="to-index-page"><a class="ajax-link" href="index">Docs</a></li>
-                        <li class="nav-item" id="to-index-page"><a class="ajax-link" href="index">License</a></li>                        
-                        <li class="nav-item" id="to-index-page"><a class="ajax-link" href="index">Contact</a></li>
+                        <li class="nav-item" id="to-index-page"><a class="ajax-link" href="index">Home</a></li>
+                        <!-- <li class="nav-item"><a class="scrollto" href="#features">Features</a></li>
+                        <li class="nav-item"><a class="scrollto" href="#docs">Docs</a></li>
+                        <li class="nav-item"><a class="scrollto" href="#license">License</a></li>                        
+                        <li class="nav-item"><a class="scrollto" href="#contact">Contact</a></li> -->
+                        <li class="nav-item" id="to-intro-page"><a class="ajax-link" href="introduction">Introduction</a></li>
                         <li class="nav-item" id="to-predict-page"><a class="ajax-link" href="predict">Predict</a></li>
                         <li class="nav-item" id="to-label-page"><a class="ajax-link" href="labelling">Label</a></li>
                         <li class="nav-item last" id="to-camera-page"><a class="ajax-link" href="camera">Camera</a></li>
@@ -302,6 +303,18 @@
           $.ajax({
             success: function(){
               window.location.href = '/predict';
+            },
+            error: function(error){
+              sweetAlert("Error", "page not exist!", "error");
+            }
+          });
+        });
+
+        $("#to-intro-page").click(function(event){
+
+          $.ajax({
+            success: function(){
+              window.location.href = '/introduction';
             },
             error: function(error){
               sweetAlert("Error", "page not exist!", "error");

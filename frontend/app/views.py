@@ -56,6 +56,12 @@ def camera():
     # if request.method == 'GET':
     return render_template('camera.html', title='camera')
 
+@app.route('/')
+@app.route('/introduction')
+def introduction():
+    # if request.method == 'GET':
+    return render_template('introduction.html', title='introduction')
+
 
 def allowedFile(filename):
     return '.' in filename and filename.rsplit('.',1)[1] in ALLOWED_EXTENSIONS

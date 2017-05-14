@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<!--[if IE 8]> <html lang="en" class="ie8"> <![endif]-->  
+<!--[if IE 9]> <html lang="en" class="ie9"> <![endif]-->  
+<!--[if !IE]><!--> <html lang="en"> <!--<![endif]-->  
+<head>
+    <title>SEDMA predict</title>
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">    
+    <link rel="shortcut icon" href="static/images/favicon.png">
+    <link href='http://fonts.googleapis.com/css?family=Lato:300,400,300italic,400italic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'> 
+    <!-- Global CSS -->
+    <link rel="stylesheet" href="/static/plugins/bootstrap/css/bootstrap.min.css">
+    <!-- Plugins CSS -->    
+    <link rel="stylesheet" href="/static/plugins/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="/static/plugins/prism/prism.css">
+    <!-- Theme CSS -->  
+    <link id="theme-style" rel="stylesheet" href="/static/css/styles.css">
+    <link href="/static/css/custom.css" rel="stylesheet">
+    <link href="/static/css/sweetalert.css" rel="stylesheet">
+</head> 
+
+<body data-spy="scroll">
+    
+    <!-- ******HEADER****** --> 
+    <header id="header" class="header">  
+        <div class="container">            
+            <h1 class="logo pull-left">
+                <a class="ajax-link" id="to-index-page" href="index">
+                    <span class="logo-title">SEDMA</span>
+                </a>
+            </h1><!--//logo-->               
+            <nav id="main-nav" class="main-nav navbar-right" role="navigation">
+                <div class="navbar-header">
+                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button><!--//nav-toggle-->
+                </div><!--//navbar-header-->            
+                <div class="navbar-collapse collapse" id="navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li class="active nav-item sr-only" id="to-index-page"><a class="ajax-link" href="index">Home</a></li>
+                        <li class="nav-item" id="to-index-page"><a class="ajax-link" href="index">Home</a></li>
+                        <!-- <li class="nav-item"><a class="scrollto" href="#features">Features</a></li>
+                        <li class="nav-item"><a class="scrollto" href="#docs">Docs</a></li>
+                        <li class="nav-item"><a class="scrollto" href="#license">License</a></li>                        
+                        <li class="nav-item"><a class="scrollto" href="#contact">Contact</a></li> -->
+                        <li class="nav-item" id="to-intro-page"><a class="ajax-link" href="introduction">Introduction</a></li>
+                        <li class="nav-item" id="to-predict-page"><a class="ajax-link" href="predict">Predict</a></li>
+                        <li class="nav-item" id="to-label-page"><a class="ajax-link" href="labelling">Label</a></li>
+                        <li class="nav-item last" id="to-camera-page"><a class="ajax-link" href="camera">Camera</a></li>
+                    </ul><!--//nav-->
+                </div><!--//navabr-collapse-->
+            </nav><!--//main-nav-->
+        </div>
+    </header><!--//header-->
+
+    <section id="wiki-page" class="docs section text-left">
+      <div class="container">
+        <div class="docs-inner">
+
+          <h1 id="title">SEDMA System Summary</h1>
+          <br>
+          <hr>
+          <p><strong>Hengte Lin, Qin Lyu, Ming-long Wu, Bingfeng Xia</strong></p>
+
+          <p>AC297r Capstone Project Final Report<br />
+          Harvard University <br />
+          Spring 2017</p>
+
+          <h2 id="Overview">0. Overview</h2>
+          <p>This is a Harvard AC297r Capstone project targeting image emotion classification in collaboration with Legendary Applied Analytics. Emotional level image classification is becoming an important topic because of needs to analyze explosive amount of image data on social media. It is challenging mainly due to lack of high quality labeled data and domain-specific models.</p>
+          <p>In this project, we propose the System for Emotion Data Management and Analysis (SEDMA) to address these two challenges in image emotion classification. SEDMA, a total solution for image emotion classification, is not only empowered by state-of-the-art deep learning models, but is also designed to facilitate labeling and storage of image datasets.</p>
+          <p>An accuracy of <strong>77.5%</strong> for top-2 class out of eight classes is achieved by fine tuning a pre-trained deep learning model (Residual Network) using a general theme image dataset. For demonstrating domain adaptability of SEDMA, it is shown that accuracy of top-2 class accuracy improves by <strong>14.1%</strong> when the model is further fine-tuned with just 500 cinema related images. Therefore, it is expected that accuracy of model prediction will be improve when more labeled image data is collected using SEDMA.</p>
+
+          <h2 id="table-of-contents">Table of Contents</h2>
+          <ul>
+            <li><a href="#Overview">0. Overview</a></li>
+            <li><a href="#Motivation">1. Motivation</a></li>
+            <li><a href="#Description-Of-Data">2. Descriptions of Data</a></li>
+            <li><a href="#Literature-Review">3. Literature Review</a>
+            <li><a href="#Modeling-Approach">4. Modeling Approach</a>
+            <li><a href="#System-Design">5. System Design</a>
+              <ul>
+                <li><a href="#Database-Module">5.1 Database Module</a>
+                  <ul>
+                    <li><a href="#Duplication-Detection">5.1.1 Duplication Detection</a></li>
+                    <li><a href="#Connection-Pool">5.1.2 Connection Pool and Lock Protection</a></li>
+                    <li><a href="#Large-batch">5.1.3 Large batch image insertion</a></li>
+                    <li><a href="#Consistency-Enforcement">5.1.4 Consistency Enforcement</a></li>
+                    <li><a href="#SQL-Compatibility">5.1.5 SQL Compatibility</a></li>
+                    <li><a href="#Back-end-Server">5.1.6 Back-end Server (dbServer)</a></li>
+                  </ul>
+                </li>
+                <li><a href="#Training-Module">5.2 Training Module</a>
+                  <ul>
+                    <li><a href="#Training-functions">5.2.1 Training functions</a></li>
+                    <li><a href="#Online-and">5.2.2 Online and offline training modes</a></li>
+                    <li><a href="#Prediction">5.2.3 Prediction</a></li>
+                    <li><a href="#Plot-and-summary">5.2.4 Plot and summary</a></li>
+                  </ul>
+                </li>
+                <li><a href="#Preprocess-Module">5.3 Preprocess Module</a>
+                </li>
+                <li><a href="#Front-end-Module">5.4 Front-end Module</a>
+                  <ul>
+                    <li><a href="#APIs-between-front-end">5.4.1 APIs between front-end module and back-end</a></li>
+                    <li><a href="#Multi-Browser-Support">5.4.2 Multi-Browser Support</a></li>
+                    <li><a href="#Image-Compress">5.4.3 Image Compress on client side</a></li>
+                    <li><a href="#Camera-support">5.4.4 Camera support</a></li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+            <li><a href="#Web-deployment">6. Web deployment</a></li>
+            <li><a href="#Results">7. Results</a></li>
+            <li><a href="#Conclusions-and-Summary">8. Conclusions and Summary</a></li>
+            <li><a href="#Future-Work">9. Future Work</a></li>
+            <li><a href="#Reference">10. Reference</a></li>
+          </ul>
+
+          <!-- /TOC -->
+
+          <h2 id="Motivation">1. Motivation</h2>
+
+          <p>This project is motivated by the need of analyzing emotional content of images when creating strategies for social media marketing. During short cinema marketing campaigns, Legendary analysts would like to learn audience’s response to cinema images pushed to social media and to respond quickly. For example, for movies targeting children, by analyzing emotion contents of images being popularly circulated on social media, analysts may find that advertising using images associated with amusement are more likely to achieve higher box office revenue than images associated with awe. Therefore, the goal of this project is to develop tools that can be used for automatic image emotion classification with potential application to cinema related images in mind.</p>
+
+
+          <h2 id="Description-Of-Data">2. Descriptions of Data</h2>
+
+          <!-- <h3 id="the-data-collection-process">The Data Collection Process</h3> -->
+
+          <!-- <h4 id="labeling">Labeling</h4> -->
+          <p>One of the biggest challenges for this project is unavailability of image dataset with emotion labels. For any model to make accurate prediction, it usually requires large amount high quality datasets for training particularly for more complicated models such as deep neural networks. For example, typical Convolutional Neural Networks (CNN) for image object recognition are trained with more than 1.2 million images such as from ImageNet[1, 2].</p>
+          <p>For image emotion classification, the largest dataset available is an open source dataset containing 23,308 general theme images with emotion labels [3]. In 2016, You et al. [3] published a study demonstrating an effort to build the first large scale dataset for image emotion analysis with 8 classes (including disgust, excitement, anger, fear, awe, sadness, amusement, contentment). In this project, You et al.’s data is the main dataset we use for training models. In addition, Legendary provides a small dataset with around 1,100 cinema related images which is mostly used for testing purpose.</p>
+          <p>Seeing that availability of data limits progress in image emotion classification, we propose SEDMA as a system that forms a close loop for labeling emotions in images. The data labeling workflow starts from pre-labeling images with trained models. Subsequently, images are displayed through web interface to users, potentially from crowd-sourcing, for them to manually label emotions with hints of highly probable emotions predicted by trained models. Last, manually labeled images with high consensus (> 60%) among users are stored in database as strongly labeled images which can be used for future model training.</p>
+
+          <!-- <figure align="center">
+              <img src="images/tool.png" alt="Tool" width="400" style="margin: auto 0;" />
+              <figcaption>Figure 2: Screenshot of our custom labeling tool</figcaption>
+          </figure> -->
+
+          <h2 id="Literature-Review">3. Literature Review</h2>
+          <p>Literature survey was done focusing on image semantic analysis [3-9]. Specifically, we looked into approaches that previous studies used for classifying emotions in images. It is noteworthy that before the emergence of CNN models for image object recognition in 2012 [10], most studies of image emotion analysis focused on extracting various types of features [4-6]. In recent years, most studies shift focus to training CNN models for image emotion recognition. Therefore we further searched recent CNN models that were applied in computer vision problems (mostly image object classification) with success [1, 10-14]. In addition, we looked for available image datasets with emotion labels and found that the largest dataset available is You et al.’s data[3, 4].</p>
+
+          <h2 id="Modeling-Approach">4. Modeling Approach</h2>
+          <p>After literature review, we decided  to explore CNN as the model for this project because its capability of capturing features automatically. However, You et al’s data (23,308 images) is not large enough to train a relatively complicated CNN model from scratch. Therefore, as shown in Figure 1, the current model mainly consists of a 52-layer deep learning CNN model based on ResNet pre-trained for image object classification [1], and is fine-tuned on You et al’s data, using Adam (an adaptive learning rate optimization method) with learning rate set to 0.1.</p>
+          <figure align="center">
+            <img src="static/images/ResNet.png" width="300px" />
+            <figcaption>Figure 1: CNN model in SEDMA</figcaption>
+          </figure>
+          <br>
+          <p>There are two building blocks for ResNet, i.e., Identity Block and Convolutional Block. Identity block has two convolutional layers and a bypassing link which adds the input of block directly to the output. Convolutional block is almost the same as Identity Block, except that it introduces an additional convolutional layer on the bypassing link. ResNet has 16 blocks with different convolutional sizes in  total, and the final output layer before fully connected layer is of 2048 dimensions.</p>
+          <p>To adapt ResNet to the problem of this project, the residual network is concatenated with a fully-connected (FC) layer of 256 dimensions and then a FC layer of 128 dimensions. Finally it outputs an 8 dimensional vector for classification. The You et al’s data is used for training parameters of the last three FC layers.</p>
+
+          <h2 id="System-Design">5. System Design</h2>
+          <p>SEDMA consists of four modules:</p>
+          <ol>
+            <li><strong>Database module downloads</strong>, stores and manages all images from You et al. data[3] and social media crawling.</li>
+            <li><strong>Process Module</strong> performs transformations to images to produce proper input for machine learning models in Training Module.</li>
+            <li>T<strong>raining Module</strong> is a machine learning module based on Keras and Theano.</li>
+            <li><strong>Front-end Module</strong> contains 3 functional interactive pages: predict, labeling and camera, as well as introduction to SEDMA.</li>
+          </ol>
+          <p>The following figure is the system architecture of SEDMA.</p>
+          <figure align="center">
+            <img src="static/images/systemArchitectureSEDMA.png" width="400px" />
+            <figcaption>Figure 2: System architecture of SEDMA</figcaption>
+          </figure>
+          <br>
+          <p>In actual implementation, class design is shown in Figure 3. The functionality of all modules are explained in detail below.</p>
+          <figure align="center">
+            <img src="static/images/SEDMAmodules.png" width="400px" />
+            <figcaption>Figure 3: Different modules of SEDMA</figcaption>
+          </figure>
+          <br>
+
+          <h4 id="Database-Module">5.1 Database Module</h4>
+          <p>The database module stores image files on file system, while keeping metadata in a Sqlite database. Such design is meant to avoid putting heavy loading of storing images to database. Figure 4 plots the architecture of database module in SEDMA including connection pool, file system storage, and metadata Sql database.</p>
+          <figure align="center">
+            <img src="static/images/databaseArchitecture.png" width="300px" />
+            <figcaption>Figure 4: The architecture of database module</figcaption>
+          </figure>
+          <br>
+
+          <h5 id="Duplication-Detection">5.1.1 Duplication Detection</h5>
+          <p>The database hashes (using p-hash) all incoming images and use hash codes as image ids. By comparing hash codes, the database detects duplicated images and stops image insertion when the same image exists in the database.</p>
+
+          <h5 id="Connection-Pool">5.1.2 Connection Pool and Lock Protection</h5>
+          <p>For performance consideration, connection pool design is used to enable multi-thread operation. A database connection can be used to query or write database. Each database connection thread contains a private Sql connection to access metadata. All database connections share a lock so that only one thread can modify file system at a time to prevent inconsistency.</p>
+
+          <h5 id="Large-batch">5.1.3 Large batch image insertion</h5>
+          <p>For convenience, a batch image insertion function is provided to import a large number of images in parallel. Large batch image insertion is achieved by creating several parallel processes as shown in the following pipeline: </p>
+          <ol>
+            <li>an image distribution process that scan through the folder and send image info to hasher processes.</li>
+            <li>multiple hasher processes that use p-hash to hash images and then handle image info to writer process.</li>
+            <li>a writer process that write data into both SQL database and File System.</li>
+          </ol>
+          <figure align="center">
+            <img src="static/images/mtInsertDB.png" width="400px"/>
+            <figcaption>Figure 5: Multi-thread insertion</figcaption>
+          </figure>
+          <br>
+
+          <h5 id="Consistency-Enforcement">5.1.4 Consistency Enforcement</h5>
+          <p>A mechanism is designed so that database modification to both Sqlite and file system can only fail or success together to ensure consistency. A scanning function is also provided to scan the database and to check consistency.</p>
+          <figure align="center">
+            <img src="static/images/failTogetherDB.png" width="400px" />
+            <figcaption>Figure 6: Consistency check</figcaption>
+          </figure>
+          <br>
+
+          <h5 id="SQL-Compatibility">5.1.5 SQL Compatibility</h5>
+          <p>Currently, Sqlite is used as the SQL database. However, the database module is decoupled from Sqlite and should supports any SQL database.</p>
+
+          <h5 id="Back-end-Server">5.1.6 Back-end Server(dbServer)</h5>
+          <p>Back-end (dbServer) and front-end servers are separated and communicate with each other through TCP socket on a customizable port. Front-end server will be introduced later. The purpose of back-end server is to handle requests from clients to the database. In addition, server also maintains an instance of theano / tensorflow in the memory for online prediction. When receiving a new connection from socket, the back-end server will assign an individual thread dedicated for that connection for simultaneous multi-threading support.</p>
+
+          <h4 id="Training-Module">5.2 Training Module</h4>
+          <p>The training module supports the following functions.</p>
+
+          <h5 id="Training-functions">5.2.1 Training functions</h5>
+          <p>Three training functions are supported: 1. Using pre-trained ResNet [1] and fine-tune the last three fully-connected layers (the current model); 2. Using pre-trained ResNet [11] and fine-tune the entire network (preserved for future training and requiring larger data than You et al.’s data); 3. Small CNN network without pre-trained weights initialization (for initial exploration and not applied).</p>
+
+          <h5 id="Online-and">5.2.2 Online and offline training modes</h5>
+          <p>In online training mode, the training samples are fetched batch-by-batch, and feeded into the network. In this way, we do not need to keep all the training samples in the memory and hence making it possible to train big networks on large-scale dataset (such as ImageNet). In offline training mode, the training samples are first processed by the preprocessing module and transformed to matrices and stored on disk. Then the training module will load all the data from disk into memory, and then start training. We use offline training mode for fine-tuning the pre-trained ResNet model, and use online training mode for training the small CNN model from scratch.</p>
+
+          <h5 id="Prediction">5.2.3 Prediction</h5>
+          <p>The weights are stored in database after model is trained. The stored models can be loaded to predict the labels or to get the predicted probabilities of any given image. This function is frequently used in predicting labels for images uploaded by front-end users.</p>
+
+          <h5 id="Plot-and-summary">5.2.4 Plot and summary</h5>
+          <p>The training module also supports plotting the network architecture of a model, calculating the classification accuracy of a model, and plotting the confusion matrix of a model.</p>
+
+          <h4 id="Preprocess-Module">5.3 Preprocess Module</h4>
+          <p>Preprocessing module transforms a raw image into a vector that can be used for training and prediction. This is done by scaling the raw image and then passing it through a pre-trained ResNet network. The output of ResNet is then a vector representation of the raw images. In training mode, preprocessing module can fetch data and process them either online or offline (see 5.2 Training Module). Preprocessing module also supports data augmentation, including translation, flipping and inverse to increase the number of labeled data.</p>
+
+          <h4 id="Front-end-Module">5.4 Front-end Module</h4>
+          <p>In the front-end module, we use Python Flask as our web server, Bootstrap as our web page framework, and AJAX as our data passing method. The following figure shows system architecture of the front-end module.</p>
+          <figure align="center">
+            <img src="static/images/frontEndArchitecture.png" width="450px" />
+            <figcaption>Figure 7: The architecture of Front-end module</figcaption>
+          </figure>
+          <br>
+          <ol>
+            <li><strong>Flask</strong>, is a micro-framework for Python. It’s a powerful tool for building web applications. In this project, we use it to create a RESTful web service.</li>
+            <li><strong>Ajax</strong>, is a asynchronous method to request or to receive data from web server to web page. According to SEDMA’s front-end function, we need to pass image data between web pages and web server. For example, we will upload an image to the web server and get its emotion classification result. We should not reload the whole page when we request or receive data, or update a sub-webpage. Therefore, we use jQuery AJAX to post the form data to the Python Flask method.</li>
+            <li>T<strong>Bootstrap</strong> is a toolkit providing simple and flexible HTML, CSS, and JS for popular UI components and interactions. We use it as our website development framework.</li>
+          </ol>
+
+          <h5 id="APIs-between-front-end">5.4.1 APIs between front-end module and back-end</h5>
+          <p>Right now, we provide 4 API functions between front end module and database module:</p>
+          <ol>
+            <li><strong>insertImage()</strong></li>
+            <li><strong>updateEmotionLabel()</strong></li>
+            <li>T<strong>predictEmotionCategory()</strong></li>
+            <li>T<strong>getRandomImageWithWeakLabel()</strong></li>
+          </ol>
+          <p>By these four API functions, users can upload an image and get its predict emotion category via our website. Users can also help label images requested from our image database randomly.</p>
+          <figure align="center">
+            <img src="static/images/apisFunction.png" width="450px" />
+            <figcaption>Figure 8: Frontend-Backend API Functions</figcaption>
+          </figure>
+          <br>
+
+          <h5 id="Multi-Browser-Support">5.4.2 Multi-Browser Support</h5>
+          <p>We support IE, Chrome, Firefox and Opera both on Desktop and Mobile platform.</p>
+          <figure align="center">
+            <img src="static/images/multiPlatform.png" width="400px" />
+            <figcaption>Figure 9: Multi-Browser Support</figcaption>
+          </figure>
+          <br>
+
+          <h5 id="Image-Compress">5.4.3 Image Compress on client side</h5>
+          <p>Considering photos taken by smart phones are generally 2 to 3 mega bytes nowadays. Upload raw images would bring network traffic congestion. We developed images compress module using Html5 functions on client side to improve performance over network as well as user experience.</p>
+          <p>Uploaded images are pre-compressed (on user side) into blobs with reduced resolution, and will be transformed back to jpg/png format after being transferred to database server.</p>
+          <figure align="center">
+            <img src="static/images/imageCompress.png" width="550px" />
+            <figcaption>Figure 10: Image Compress on client side</figcaption>
+          </figure>
+          <br>
+
+          <h5 id="Camera-support">5.4.4 Camera support</h5>
+          <p>To facilitate upload of images for emotion prediction, camera capture of images from the project website is implemented for both computer and for mobile device. On mobile platform, users can use camera by upload images function on Predict Page. On desktop platform, we support using front-camera by Chrome and Firefox.</p>
+
+          <h2 id="Web-deployment">6. Web deployment</h2>
+          <p>SEDMA is currently deployed on an AWS server using Nginx web server (http://www.sedma.me).</p>
+
+          <h2 id="Results">7. Emotion prediction results anslysis</h2>
+          <p>Our first model in SEDMA is fine-tuned with 70% of You et al.’s dataset based on a pre-trained ResNet, and evaluated on the other 30% of You et al.’s dataset. The overall classification accuracy on validation set is 58.5%, and the confusion matrix is shown below:</p>
+
+          <figure align="center">
+            <img src="static/images/modelRes1.png" width="400px" />
+            <figcaption>Figure 11: Confusion matrix without class reweighting</figcaption>
+          </figure>
+          <br>
+
+          <p>The number of samples in each class in You et al’s dataset is unbalanced, hence the model has good performance on classes with more training samples (e.g., amusement and contentment), but has poor performance on classes with fewer training samples (e.g., anger and fear). In order to tackle this problem, we further added class reweighting to train a second model. Although the overall classification accuracy has slightly decreased to 55.5%, the performance on classes with fewer samples has dramatically increased (from 8% to 41%), as shown in the confusion matrix below:</p>
+
+          <figure align="center">
+            <img src="static/images/modelRes1.png" width="400px" />
+            <figcaption>Figure 12: Confusion matrix with class reweighting</figcaption>
+          </figure>
+          <br>
+
+
+          <p>The data distribution in real world problem is generally different from You et al.’s dataset. For example, the test set provided by Legendary is mainly collected from movies, while You et al.’s dataset is mainly collected from social media. The overall classification rates of both Model 1 and Model 2 have decreased to less than 30% on Legendary’s test set, as shown in the table below:</p>
+
+          <div class="docs-inner">
+          <table class="table table-striped table-hover">
+            <thead>
+              <tr>
+                <th> </th>
+                <th>Model1</th>
+                <th>Model2</th>
+                <th>Model3</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Val Acc.</td>
+                <td>58.5%</td>
+                <td>55.5%</td>
+                <td>--</td>
+              </tr>
+              <tr>
+                <td>Val Top2 Acc.</td>
+                <td>77.5%</td>
+                <td>75.2%</td>
+                <td>--</td>
+              </tr>
+              <tr>
+                <td>Test Acc.</td>
+                <td>24.8%</td>
+                <td>27.1%</td>
+                <td>34.2</td>
+              </tr>
+              <tr>
+                <td>Test Top2 Acc.</td>
+                <td>45.0%%</td>
+                <td>42.9%%</td>
+                <td>59.1%</td>
+              </tr>
+            </tbody>
+          </table>
+          </div>
+
+
+
+          <p>To tackle this problem, we randomly choose 500 images from Legendary’s dataset and fine-tune Model 1 (or Model 2) on these images. The overall accuracy of this model (Model 3) on Legendary’s test set has increased by 10% compared to Model 1. This demonstrates the domain adaptation ability of our model structure.</p>
+
+          <h2 id="Conclusions-and-Summary">8. Conclusions and Summary</h2>
+          <p>With limited number of images (23,308 from You et al., ~1000 from Legendary), we achieved very good  performance (77.5% and 59% top-2 accuracy on You et al and Legendary data, respectively). Recognizing that the true bottleneck of image emotion classification is the lack of labeled data, we developed SEDMA to facilitate accumulation of strongly labeled images. More important, our results demonstrate domain adaptability of SEDMA. Therefore, if more data is provided, it is convincing that SEDMA will perform well in image emotion classification in various domains. To ensure stability of SEDMA in production environment, we designed a durable and expandable system structure with multi threading, hybrid database, deep modularization and unit test features. Therefore, it is concluded that SEDMA provides a total solution for image emotion classification not only for prediction but also for actively building large datasets for training better models.</p>
+
+          <h2 id="Future-Work">9. Future Work</h2>
+          <p>Development of sedma will be continued. We plan to keep this website online and to gradually improve SEDMA. Future plans include expanding Sql database compatibility of to MySql and AWS S3. For higher throughput of SEDMA, we plan to explore Twisted framework for back-end server.  To simultaneously analyzing the vast amount of texts and images on social media, we plan to add NLP (natural language processing) module and explore other types of models such as RNN (recurrent neural network). Because people today spend lots of time using social media, we foresee that SEDMA will serve the important function of analyzing and understanding information flow, either in texts or in images, in social media.</p>
+
+          <h2 id="Reference">Reference</h2>
+          <blockquote>
+          <p><small><br>[1] He, et al., "Deep residual learning for image recognition." Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition. 2016.<br>
+          [2] Russakovsky et al., “ImageNet Large Scale Visual Recognition Challenge.”, International Journal of Computer Vision, 2015.<br>
+          [3] You et al., Building a Large Scale Dataset for Image Emotion Recognition: The Fine Print and The Benchmark, Association for the Advancement of Artificial Intelligence 2016<br>
+          [4] Machajdik et al., Affective Image Classification using Features Inspired by Psychology and Art Theory, ACM Multimedia Conference 2010<br>
+          [5] Olkiewicz et al., Emotion-based Image Retrieval—an Artificial Neural Network Approach, Proceedings of the International Multiconference on Computer Science and Information Technology 2010<br>
+          [6] Zhao et al., Exploring Principles-of-Art Features For Image Emotion Recognition, ACM Multimedia Conference 2014<br>
+          [7] Rao et al., Learning Multi-level Deep Representations for Image Emotion Classification, Computer Vision and Pattern Recognition 2016<br>
+          [8] You and Luo et al., Cross-modality Consistent Regression for Joint Visual-Textual Sentiment Analysis of Social Multimedia, ACM International Conference on Web Search and Data Mining 2016<br>
+          [9] You, Sentiment and Emotion Analysis for Social Multimedia: Methodologies and Applications, ACM International Conference on Multimedia 2016<br>
+          [10] Krizhevsky, et al., "Imagenet classification with deep convolutional neural networks." Advances in neural information processing systems. 2012.<br>
+          [11] Szegedy, et al., Going deeper with convolutions. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, pages 1–9, 2015<br>
+          [12] Simonyan and Zisserman, Very deep convolutional networks for large-scale image recognition. arXiv preprint arXiv:1409.1556, 2014.<br>
+          [13] Szegedy, et al., "Rethinking the inception architecture for computer vision." Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition. 2016.<br>
+          [14] Russakovsky et al., “ImageNet Large Scale Visual Recognition Challenge.”, International Journal of Computer Vision, 2015.
+          </small></p>
+          </blockquote>
+
+
+          <footer class="site-footer text-right">
+            <p><small>updated on May 14, 2017</small></p>
+          </footer>
+
+        </div>
+      </div>
+    </section>
+
+
+
+</body>
+</html> 
+

@@ -46,11 +46,12 @@
                 <div class="navbar-collapse collapse" id="navbar-collapse">
                     <ul class="nav navbar-nav">
                         <li class="active nav-item sr-only"><a class="scrollto" href="#promo">Home</a></li>
-                        <li class="nav-item"><a class="scrollto" href="#about">About</a></li>
-                        <li class="nav-item"><a class="scrollto" href="#features">Features</a></li>
+                        <li class="nav-item"><a class="scrollto" href="#about">Home</a></li>
+                        <!-- <li class="nav-item"><a class="scrollto" href="#features">Features</a></li>
                         <li class="nav-item"><a class="scrollto" href="#docs">Docs</a></li>
                         <li class="nav-item"><a class="scrollto" href="#license">License</a></li>                        
-                        <li class="nav-item"><a class="scrollto" href="#contact">Contact</a></li>
+                        <li class="nav-item"><a class="scrollto" href="#contact">Contact</a></li> -->
+                        <li class="nav-item" id="to-intro-page"><a class="ajax-link" href="introduction">Introduction</a></li>
                         <li class="nav-item" id="to-predict-page"><a class="ajax-link" href="predict">Predict</a></li>
                         <li class="nav-item" id="to-label-page"><a class="ajax-link" href="labelling">Label</a></li>
                         <li class="nav-item last" id="to-camera-page"><a class="ajax-link" href="camera">Camera</a></li>
@@ -73,8 +74,8 @@
             </div>
             <ul class="meta list-inline">
                 <li><a href="" target="_blank">View on GitHub(Comming)</a></li>
-                <li><a href="" target="_blank">Full Documentation(Comming)</a></li>
-                <li>Created by: <a href="" target="_blank">Hengte Lin, Qin Lyu, Ming-long Wu, Bingfeng Xia</li>
+                <li><a href="introduction" target="_blank">Full Documentation</a></li>
+                <li>Created by: Hengte Lin, Qin Lyu, Ming-long Wu, Bingfeng Xia</li>
             </ul><!--//meta-->
         </div><!--//container-->
         <div class="social-media">
@@ -82,9 +83,7 @@
                 <ul class="list-inline">
                     <!--// Generate github buttons: https://github.com/mdo/github-buttons -->
                     <li class="github-star"><iframe src="https://ghbtns.com/github-btn.html?user=CrimsonInn&type=follow" frameborder="0" scrolling="0" width="170px" height="20px"></iframe></li>
-
                     <li class="github-star"><iframe src="http://ghbtns.com/github-btn.html?user=CrimsonInn&repo=dab-tree&type=watch&count=true" allowtransparency="true" frameborder="0" scrolling="0" width="110" height="20"></iframe></li>
-
                     <li class="github-fork"><iframe src="http://ghbtns.com/github-btn.html?user=CrimsonInn&repo=dab-tree&type=fork" allowtransparency="true" frameborder="0" scrolling="0" width="53" height="20"></iframe></li>
                 </ul>
             </div>
@@ -193,7 +192,7 @@
                 <div class="code-block">
                     <pre><code class="language-css">
     /*   
-     * 'legendary' file root directory
+     * root directory
      */
     $./start_server.sh
     $./start_frontend.sh
@@ -202,11 +201,12 @@
             </div><!--//block-->
             
             <div class="block">
-                <h3 class="sub-title text-center">Full Documentation (Comming soon)</h3>
-                <p>Full documentation of SEDMA System can be found in the following github link.</p>
+                <h3 class="sub-title text-center">Full Documentation</h3>
+                <p>Full documentation of SEDMA System can be found in the following link.</p>
                 <hr>
                 <p class="text-center">
-                    <a class="btn btn-cta-primary" href="https://github.com/CrimsonInn" target="_blank">More on GitHub</a>
+                    <!-- <a class="btn btn-cta-primary" href="https://github.com/CrimsonInn" target="_blank">More on GitHub</a> -->
+                    <a class="btn btn-cta-primary ajax-link" id="to-intro-page" href="introduction">Detail Introduction</a>
                 </p>
             </div><!--//block-->
             
@@ -263,9 +263,9 @@
                     <h4 class="sub-title">Get Connected</h4>
                     <ul class="social-icons list-inline">
                         <li><a href="" target="_blank"><i class="fa fa-twitter"></i></a></li>
-                        <li><a href="https://www.facebook.com/profile.php?id=100013111298525" target="_blank"><i class="fa fa-facebook"></i></a></li>
-                        <li><a href="https://www.linkedin.com/in/qin-lyu-ab526395/"><i class="fa fa-linkedin"></i></a></li>
-                        <li class="last"><a href="mailto:linhengte1993@gmail.com"><i class="fa fa-envelope"></i></a></li>              
+                        <li><a href="https://www.facebook.com" target="_blank"><i class="fa fa-facebook"></i></a></li>
+                        <li><a href="https://www.linkedin.com"><i class="fa fa-linkedin"></i></a></li>
+                        <li class="last"><a href="mailto:"><i class="fa fa-envelope"></i></a></li>              
                     </ul>
                 </div><!--//info-->
             </div><!--//contact-inner-->
@@ -405,6 +405,18 @@
           $.ajax({
             success: function(){
               window.location.href = '/predict';
+            },
+            error: function(error){
+              sweetAlert("Error", "page not exist!", "error");
+            }
+          });
+        });
+
+        $("#to-intro-page").click(function(event){
+
+          $.ajax({
+            success: function(){
+              window.location.href = '/introduction';
             },
             error: function(error){
               sweetAlert("Error", "page not exist!", "error");
